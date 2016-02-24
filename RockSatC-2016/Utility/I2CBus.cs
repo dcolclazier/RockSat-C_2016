@@ -48,7 +48,21 @@ namespace RockSatC_2016.Utility
                 //throw new Exception("Could not write to device."); //BUG - SHIT EXCEPTION HANDLING.
                 Debug.Print("Possible I2C write failure... transferred: " + transferred + " .. buffer: " + writeBuffer.Length);
         }
-
+        internal int read16(I2CDevice.Configuration bnoConfig, byte lsbRegister, byte msbRegister)
+        {
+            var lsb = new byte[1];
+            I2CBus.Instance().ReadRegister(bnoConfig, lsbRegister, lsb, 1000);
+            var msb = new byte[1];
+            I2CBus.Instance().ReadRegister(bnoConfig, msbRegister, msb, 1000);
+            var test = (((msb[0]) << 8) | (lsb[0]));
+            return test;
+        }
+        internal byte read8(I2CDevice.Configuration bnoConfig, byte reg)
+        {
+            byte[] buffer = new byte[1];
+            I2CBus.Instance().ReadRegister(bnoConfig, reg, buffer, 1000);
+            return buffer[0];
+        }
         internal void Read(I2CDevice.Configuration config, byte[] readBuffer, int transactionTimeout = 1000)
         {
             _slave.Config = config;

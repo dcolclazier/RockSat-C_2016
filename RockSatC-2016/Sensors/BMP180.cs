@@ -1,8 +1,10 @@
 ﻿#undef BMP085_USE_DATASHEET_VALS // define for sanity check
 
 using System;
+using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using RockSatC_2016.Utility;
+using Math = System.Math;
 
 namespace RockSatC_2016.Sensors
 {
@@ -31,9 +33,13 @@ namespace RockSatC_2016.Sensors
             Bmp085_Register_Readpressurecmd = 0x34
         }
 
-        public Bmp180(byte address = 0x77) {
+        public Bmp180(byte address = 0x77, Mode mode = Mode.Bmp085_Mode_Ultralowpower) {
             Bmp085Address = address;
             _slaveConfig = new I2CDevice.Configuration(Bmp085Address, 100);
+            while (!Init(mode))
+            {
+                Debug.Print("BMP sensor not detected...");
+            }
         }
 
         public enum Mode : byte

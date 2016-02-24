@@ -42,25 +42,14 @@ namespace RockSatC_2016 {
             public bool IsPersistent { get; }
         }
 
-        //public static void StopPersistantThread(int id) {
-        //    ((Thread)PersistantThreads[id])?.Abort();
-        //}
         
         public static void QueueWorkItem(WorkItem workItem) {
-            //lock (Locker)
-           // {
+          
                 //queue the work action 
                 lock (ThreadActions) {
                     ThreadActions.Enqueue(workItem);
                 }
 
-                //if (persistent) {
-                //    var persistentThread = new Thread(ThreadWorker);
-                //    var id = PersistantThreadCount++;
-                //    PersistantThreads.Add(id,persistentThread);
-                //    persistentThread.Start();
-                //    return id;
-                //}
 
                 //if we have less ThreadWorkers working than our MaxThreads, go ahead and spin one up.
                 if (AvailableThreads.Count < MaxThreads)

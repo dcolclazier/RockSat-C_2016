@@ -1,6 +1,6 @@
 ﻿namespace RockSatC_2016.Flight_Computer {
     public class FlightComputer {
-
+    
         private static FlightComputer _instance;
         public static FlightComputer Instance => _instance ?? (_instance = new FlightComputer());
 
@@ -18,4 +18,7 @@
             OnEventTriggered?.Invoke(eventType, trigger);
         }
     }
+
+  
 }
+

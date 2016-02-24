@@ -1,9 +1,29 @@
-﻿using System.Threading;
+﻿using System.IO.Ports;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using RockSatC_2016.Flight_Computer;
 using RockSatC_2016.Sensors;
 using RockSatC_2016.Utility;
+
+//SD Logger idea
+/*
+
+    When a sensor needs to log some data, it should be able to do so in the form of an event, maybe?
+    The idea is that we need to stick logging data into a queue... That way, the sensors can keep logging, keep adding to the queue, and so on
+    without needing to worry about waiting on the SD card to write. The queue will be limited in size by RAM.
+
+    The queue should then be responsible for doing the following:
+        - before the data goes into the queue, it should be added to whatever the proper buffer should be
+        - should there be a different buffer for each type of data? when buffer fills, enters the logging queue
+        - most efficient buffer?
+        - logging queue just pulls the top data packet (the buffer from before -  512 bytes?) from the queue
+        
+
+*/
+
+
 
 namespace RockSatC_2016 {
     public static class Program {
@@ -12,47 +32,19 @@ namespace RockSatC_2016 {
         private static Bno055 _bnoSensor;
         private static I2CDevice.Configuration _bnoConfig;
         public static void Main() {
+            _bmpSensor = new Bmp180(0x77);
 
             _bnoConfig = new I2CDevice.Configuration(0x28,100);
-            //ultralowpower, ~45hz
-            //standard, ~35hz
-            _bmpSensor = new Bmp180(0x77);
-            while (!_bmpSensor.Init(Bmp180.Mode.Bmp085_Mode_Ultralowpower))
-            {
-                Debug.Print("BMP sensor not detected...");
-            }
-
             _bnoSensor = new Bno055(address: 0x28);
-            while (!_bnoSensor.Init())
-            {
-                Debug.Print("9dof sensor not detected...");
-            }
-            _bnoSensor.SetExtCrystalUse(true);
+            
+            var wtf_i_want = new ThreadPool.WorkItem(TestBNO, FlightComputerEventType.GyroUpdate, null, true);
+            FlightComputer.Instance.Execute(wtf_i_want);
 
-            var bnoTest = new ThreadPool.WorkItem(TestBNO, FlightComputerEventType.GyroUpdate, null, true);
-            FlightComputer.Instance.Execute(bnoTest);
-
-            var test = new ThreadPool.WorkItem(TestPressure, FlightComputerEventType.PressureUpdate,null,true);
+            var test = new ThreadPool.WorkItem(TestPressure, FlightComputerEventType.None, null, true);
             FlightComputer.Instance.Execute(test);
 
-            
-
         }
-
-        private static int read16(byte lsbRegister, byte msbRegister) {
-            var lsb = new byte[1];
-            I2CBus.Instance().ReadRegister(_bnoConfig, lsbRegister, lsb, 1000);
-            var msb = new byte[1];
-            I2CBus.Instance().ReadRegister(_bnoConfig, msbRegister, msb, 1000);
-            var test = (((msb[0]) << 8) | (lsb[0]));
-            return test;
-        }
-        private static byte read8(byte reg)
-        {
-            byte[] buffer = new byte[1];
-            I2CBus.Instance().ReadRegister(_bnoConfig, reg, buffer, 1000);
-            return buffer[0];
-        }
+        
         private static void TestBNO() {
 
             //All default values should be 0.0 unless otherwise noted
@@ -69,24 +61,24 @@ namespace RockSatC_2016 {
 
             //doesn't work... seems to respond to accelerations, but numbers wrong.
             //No default values when accel = 0, either.
-            double testAccelX = read16(0x08, 0x09);
-            double testAccelY = read16(0x0A, 0x0B);
-            double testAccelZ = read16(0x0C, 0x0D);
+            double testAccelX = I2CBus.Instance().read16(_bnoConfig, 0x08, 0x09);
+            double testAccelY = I2CBus.Instance().read16(_bnoConfig, 0x0A, 0x0B);
+            double testAccelZ = I2CBus.Instance().read16(_bnoConfig, 0x0C, 0x0D);
             Debug.Print("X: " + (testAccelX /= 100.0).ToString("F1") +
                        " Y: " + (testAccelY /= 100.0).ToString("F1") +
                        " Z: " + (testAccelZ /= 100.0).ToString("F1"));
 
             //kinda works, but numbers off? not sure about this one.
-            double testMagX = read16(0x0E, 0x0F);
-            double testMagY = read16(0x10, 0x11);
-            double testMagZ = read16(0x12, 0x13);
+            double testMagX = I2CBus.Instance().read16(_bnoConfig, 0x0E, 0x0F);
+            double testMagY = I2CBus.Instance().read16(_bnoConfig, 0x10, 0x11);
+            double testMagZ = I2CBus.Instance().read16(_bnoConfig, 0x12, 0x13);
             Debug.Print("X: " + (testMagX /= 16.0).ToString("F1") +
                        " Y: " + (testMagY /= 16.0).ToString("F1") +
                        " Z: " + (testMagZ /= 16.0).ToString("F1"));
 
 
             //works
-            double temp = read8(0x34);
+            double temp = I2CBus.Instance().read8(_bnoConfig, 0x34);
             Debug.Print("Temp: " + temp);
 
             Thread.Sleep(500);
@@ -102,6 +94,7 @@ namespace RockSatC_2016 {
                 + "\n" + "Temperature: " + temp + " C"
                 + "\n" + "Altitude:    "
                 + Bmp180.PressureToAltitude(Bmp180.SensorsPressureSealevelhpa, pressure, temp) + " m" + "\n");
+            custom_delay_usec(30);
         }
 
         public static void custom_delay_usec(uint time) {

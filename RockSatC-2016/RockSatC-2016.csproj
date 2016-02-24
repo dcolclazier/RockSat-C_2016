@@ -32,6 +32,7 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
+    <Compile Include="Flight Computer\Test.cs" />
     <Compile Include="Sensors\BMP180.cs" />
     <Compile Include="Sensors\BNO055.cs" />
     <Compile Include="Flight Computer\FlightComputer.cs" />
