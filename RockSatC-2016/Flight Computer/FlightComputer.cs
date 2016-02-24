@@ -1,4 +1,8 @@
-﻿namespace RockSatC_2016.Flight_Computer {
+﻿using RockSatC_2016.Abstract;
+using RockSatC_2016.Event_Data;
+using RockSatC_2016.Utility;
+
+namespace RockSatC_2016.Flight_Computer {
     public class FlightComputer {
     
         private static FlightComputer _instance;
@@ -9,12 +13,12 @@
         public void Execute(ThreadPool.WorkItem workItem) {
             ThreadPool.QueueWorkItem(workItem);
         }
-        public event EventTriggered OnEventTriggered;
+        public static event EventTriggered OnEventTriggered;
 
         //object should be EventArgs
-        public delegate void EventTriggered(FlightComputerEventType eventName, object trigger);
+        public delegate void EventTriggered(EventType eventName, IEventData trigger);
 
-        public void TriggerEvent(FlightComputerEventType eventType, object trigger) {
+        public void TriggerEvent(EventType eventType, IEventData trigger) {
             OnEventTriggered?.Invoke(eventType, trigger);
         }
     }

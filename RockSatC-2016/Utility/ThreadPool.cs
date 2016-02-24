@@ -2,9 +2,11 @@
 using System.Collections;
 using System.Threading;
 using Microsoft.SPOT;
+using RockSatC_2016.Abstract;
+using RockSatC_2016.Event_Data;
 using RockSatC_2016.Flight_Computer;
 
-namespace RockSatC_2016 {
+namespace RockSatC_2016.Utility {
     public static class ThreadPool {
 
         private static readonly object Locker = new object();
@@ -28,18 +30,22 @@ namespace RockSatC_2016 {
 
         public class WorkItem {
             public readonly ThreadStart Action = null;
-            public readonly FlightComputerEventType EventType = FlightComputerEventType.None; 
-            public readonly object Trigger = null;
+            public readonly EventType EventType = EventType.None; 
+            public readonly IEventData EventData = null;
             public WorkItem() {}
 
-            public WorkItem(ThreadStart action, FlightComputerEventType type = FlightComputerEventType.None, object trigger = null, bool isPersistent = false) {
+            public WorkItem(ThreadStart action, EventType type = EventType.None, IEventData eventData = null, bool isPersistent = false) {
                 Action = action;
                 EventType = type;
-                Trigger = trigger;
+                EventData = eventData;
                 IsPersistent = isPersistent;
             }
 
-            public bool IsPersistent { get; }
+            public bool IsPersistent { get; private set; }
+
+            public void SetRepeat(bool b) {
+                IsPersistent = b;
+            }
         }
 
         
@@ -99,9 +105,9 @@ namespace RockSatC_2016 {
                 try
                 {
                     workItem.Action();
-                    //if the action was an event, trigger that the event has completed
-                    if (workItem.EventType != FlightComputerEventType.None)
-                        FlightComputer.Instance.TriggerEvent(workItem.EventType, workItem.Trigger);
+                    //if the action was an event, eventData that the event has completed
+                    if (workItem.EventType != EventType.None)
+                        FlightComputer.Instance.TriggerEvent(workItem.EventType, workItem.EventData);
 
                     if (workItem.IsPersistent) QueueWorkItem(workItem);
                 }

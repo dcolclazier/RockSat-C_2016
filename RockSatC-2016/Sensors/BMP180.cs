@@ -38,6 +38,7 @@ namespace RockSatC_2016.Sensors
             _slaveConfig = new I2CDevice.Configuration(Bmp085Address, 100);
             while (!Init(mode))
             {
+                
                 Debug.Print("BMP sensor not detected...");
             }
         }
