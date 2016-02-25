@@ -16,7 +16,7 @@ namespace RockSatC_2016 {
        
         public static void Main() {
 
-            var pressureloop = new PressureUpdater();
+            //var pressureloop = new PressureUpdater();
             var bnoloop = new BNOUpdater100Hz();
             var bnotemploop = new BNOTempUpdater();
             var geigerloop = new GeigerUpdater(Pins.GPIO_PIN_D2, Pins.GPIO_PIN_D3);
@@ -24,14 +24,14 @@ namespace RockSatC_2016 {
 
             logger.start();
 
-            pressureloop.start();
+            //pressureloop.start();
             bnotemploop.start();
             bnoloop.start();
             geigerloop.start();
         }
         public static void custom_delay_usec(uint time) {
             var delayStart = Microsoft.SPOT.Hardware.Utility.GetMachineTime().Ticks;
-            while ((Microsoft.SPOT.Hardware.Utility.GetMachineTime().Ticks - delayStart) < time*10) ;
+            while (Microsoft.SPOT.Hardware.Utility.GetMachineTime().Ticks - delayStart < time*10) ;
 
         }
     }

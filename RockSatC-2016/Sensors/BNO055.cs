@@ -213,9 +213,13 @@ namespace RockSatC_2016.Sensors {
         public bool Init(Bno055OpMode mode = Bno055OpMode.Operation_Mode_Ndof) {
             var id = Read8(Bno055Registers.Bno055_Chip_Id_Addr);
             if (id != _bno055Id) {
+                Debug.Print("We didn't get the right chip address, waiting then trying again.");
                 Thread.Sleep(500);
                 id = Read8(Bno055Registers.Bno055_Chip_Id_Addr);
                 if (id != _bno055Id) return false;
+            }
+            else {
+                Debug.Print("We read the Chip ID Address!");
             }
 
             SetMode(Bno055OpMode.Operation_Mode_Config);
