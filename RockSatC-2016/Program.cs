@@ -18,14 +18,14 @@ namespace RockSatC_2016 {
 
             //var pressureloop = new PressureUpdater();
             var bnoloop = new BNOUpdater100Hz();
-            var bnotemploop = new BNOTempUpdater();
+            //var bnotemploop = new BNOTempUpdater();
             var geigerloop = new GeigerUpdater(Pins.GPIO_PIN_D2, Pins.GPIO_PIN_D3);
             var logger = new Logger(SerialPorts.COM1 ,115200, 128);
 
             logger.start();
 
             //pressureloop.start();
-            bnotemploop.start();
+            //bnotemploop.start();
             bnoloop.start();
             geigerloop.start();
         }

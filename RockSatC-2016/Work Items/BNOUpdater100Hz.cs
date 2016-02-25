@@ -59,7 +59,7 @@ namespace RockSatC_2016.Work_Items {
         private readonly I2CDevice.Configuration _bnoConfig;
         public BNOUpdater100Hz() {
             _bnoConfig = new I2CDevice.Configuration(0x28, 100);
-            _bnoSensor = new Bno055(address: 0x28);
+            _bnoSensor = new Bno055(_bnoConfig);
             _bnoData = new BNOData();
             workItem = new ThreadPool.WorkItem(GryoUpdater, EventType.BNOUpdate100Hz, null, true);
             FlightComputer.Instance.Execute(workItem);
@@ -85,7 +85,7 @@ namespace RockSatC_2016.Work_Items {
         private readonly I2CDevice.Configuration _bnoConfig;
         public BNOTempUpdater() {
             _bnoConfig = new I2CDevice.Configuration(0x28, 100);
-            _bnoSensor = new Bno055(address: 0x28);
+            _bnoSensor = new Bno055(_bnoConfig);
             _bnoTempData = new BNOTempData();
             workItem = new ThreadPool.WorkItem(TempUpdater, EventType.BNOUpdate1Hz, null, true);
             FlightComputer.Instance.Execute(workItem);

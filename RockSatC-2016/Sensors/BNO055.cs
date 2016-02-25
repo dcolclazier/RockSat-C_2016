@@ -197,9 +197,19 @@ namespace RockSatC_2016.Sensors {
             Vector_Gravity = Bno055Registers.Bno055_Gravity_Data_X_Lsb_Addr
         }
 
-        public Bno055(byte address = 0x28, int clockKHz = 100, Bno055OpMode mode = Bno055OpMode.Operation_Mode_Ndof) {
-            _slaveConfig = new I2CDevice.Configuration(address, clockKHz);
-            Address = address;
+        //public Bno055(byte address = 0x28, int clockKHz = 100, Bno055OpMode mode = Bno055OpMode.Operation_Mode_Ndof) {
+        //    _slaveConfig = new I2CDevice.Configuration(address, clockKHz);
+        //    Address = address;
+
+        //    while (!Init(mode))
+        //    {
+        //        Debug.Print("9dof sensor not detected...");
+        //    }
+        //    SetExtCrystalUse(true);
+        //}
+        public Bno055(I2CDevice.Configuration slaveConfig, Bno055OpMode mode = Bno055OpMode.Operation_Mode_Ndof) {
+            _slaveConfig = slaveConfig;
+            Address = slaveConfig.Address;
 
             while (!Init(mode))
             {
