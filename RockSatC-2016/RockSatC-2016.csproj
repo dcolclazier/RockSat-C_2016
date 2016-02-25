@@ -32,7 +32,7 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
-    <Compile Include="Work Items\BNOUpdater.cs" />
+    <Compile Include="Work Items\BNOUpdater100Hz.cs" />
     <Compile Include="Event Listeners\ExampleListener.cs" />
     <Compile Include="Abstract\IEventListener.cs" />
     <Compile Include="Event Listeners\Logger.cs" />

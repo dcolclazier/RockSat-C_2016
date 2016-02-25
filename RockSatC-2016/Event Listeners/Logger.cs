@@ -5,6 +5,7 @@ using RockSatC_2016.Abstract;
 using RockSatC_2016.Event_Data;
 using RockSatC_2016.Flight_Computer;
 using RockSatC_2016.Utility;
+using RockSatC_2016.Work_Items;
 
 namespace RockSatC_2016.Event_Listeners {
     public class Logger : Action, IEventListener {
@@ -29,20 +30,31 @@ namespace RockSatC_2016.Event_Listeners {
             var logEntry = "";
             if (packet != null) { 
                 switch (packet.Name) {
-
+                    case EventType.BNOUpdate1Hz:
+                        var tempData = packet.EventData as BNOTempData;
+                        if (tempData != null)
+                            logEntry = "T:" + tempData.temp + ";";
+                        break;
+                    case EventType.GeigerUpdate:
+                        var geigerData = packet.EventData as GeigerData;
+                        if (geigerData != null)
+                            logEntry = "G:" + geigerData.shielded_geigerCount + ":" + geigerData.unshielded_geigerCount +
+                                       ";";
+                        break;
                     case EventType.PressureUpdate:
                         var pressureData = packet.EventData as PressureData;
                         if (pressureData != null)
                             logEntry = "P:" + pressureData.Pressure + ":" + pressureData.Altitude + ":" +
                                        pressureData.Temp + ";";
                         break;
-                    case EventType.GyroUpdate:
-                        var gyroData = packet.EventData as BnoData;
-                        if (gyroData != null) logEntry = "G:" + gyroData.Gyro_X + ":" + gyroData.Gyro_Y + ":" + gyroData.Gyro_Z + ";";
+                    case EventType.BNOUpdate100Hz:
+                        var bnoData = packet.EventData as BNOData;
+                        if (bnoData != null) logEntry = "B:" + bnoData.gyro_x + ":" + bnoData.gyro_y + ":" + bnoData.gyro_z 
+                                                        + bnoData.accel_x + ":" + bnoData.accel_y + ":" + bnoData.accel_z + ";";
                         break;
                     
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(packet.Name),"Event Type not handled by logger... ");
                 }
                 if (buffer.Length + logEntry.Length > maxBufferSize) FlushBufferToSD();
                 buffer += logEntry;

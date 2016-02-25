@@ -9,7 +9,7 @@ namespace RockSatC_2016.Event_Listeners {
         public void MyTrigger(EventType eventName, object trigger) {
 
             //This listens for Gyro data!!
-            if (eventName != EventType.GyroUpdate) return;
+            if (eventName != EventType.BNOUpdate100Hz) return;
             
             //log data!
 
