@@ -25,9 +25,9 @@ namespace RockSatC_2016 {
 
             
             //var pressureloop = new PressureUpdater();
-            Debug.Print("About to initialize the BNO Sensor 100 Hz update action....");
-            var bnoloop = new BNOUpdater100Hz();
-            Debug.Print("BNO action initialized.");
+            //Debug.Print("About to initialize the BNO Sensor 100 Hz update action....");
+            //var bnoloop = new BNOUpdater100Hz();
+            //Debug.Print("BNO action initialized.");
 
             //THIS SECTION CREATES/INITIALIZES THE BNO TEMPERATURE UPDATER
             //Debug.Print("About to initialize the BNO temperature update action");
@@ -63,9 +63,9 @@ namespace RockSatC_2016 {
             //Debug.Print("BNO temp update action initiated.");
 
             //THIS STARTS THE 100HZ BNO Accel/Gyro update
-            Debug.Print("Intiating BNO 100Hz update action");
-            bnoloop.start();
-            Debug.Print("BNO 100Hz action initiated.");
+            //Debug.Print("Intiating BNO 100Hz update action");
+            //bnoloop.start();
+            //Debug.Print("BNO 100Hz action initiated.");
 
 
             //THIS STARTS THE Geiger UPDATE.
