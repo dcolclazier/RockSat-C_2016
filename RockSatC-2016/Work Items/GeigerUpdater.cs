@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using RockSatC_2016.Abstract;
@@ -39,11 +40,11 @@ namespace RockSatC_2016.Work_Items {
         private int unshieldedCounts { get; set; }
 
         private void GatherCounts() {
+            Thread.Sleep(5000);
             geigerData.shielded_geigerCount = shieldedCounts;
             shieldedCounts = 0;
             geigerData.unshielded_geigerCount = unshieldedCounts;
             unshieldedCounts = 0;
-            
         }
 
         private readonly GeigerData geigerData = new GeigerData();
