@@ -25,16 +25,53 @@ namespace RockSatC_2016 {
 
             
             //var pressureloop = new PressureUpdater();
+            Debug.Print("About to initialize the BNO Sensor 100 Hz update action....");
             var bnoloop = new BNOUpdater100Hz();
-            //var bnotemploop = new BNOTempUpdater();
-            var geigerloop = new GeigerUpdater(Pins.GPIO_PIN_D2, Pins.GPIO_PIN_D3);
-            var logger = new Logger(SerialPorts.COM1 ,115200, 128);
+            Debug.Print("BNO action initialized.");
 
+            //THIS SECTION CREATES/INITIALIZES THE BNO TEMPERATURE UPDATER
+            //Debug.Print("About to initialize the BNO temperature update action");
+            //var bnotemploop = new BNOTempUpdater();
+            //Debug.Print("BNO temp update action initated.");
+
+            //THIS SECTION CREATES/INITIALIZES THE GEIGER COUNTER UPDATER
+            Debug.Print("About to initialize the Geiger counter update action");
+            var geigerloop = new GeigerUpdater(Pins.GPIO_PIN_D2, Pins.GPIO_PIN_D3);
+            Debug.Print("Geiger action initialized.");
+
+            //THIS SECTION CREATES/INITIALIZES THE SERIAL LOGGER
+            var baud = 115200;
+            var buffer = 512;
+            var com = SerialPorts.COM1;
+            Debug.Print("About to initialize Serial logger on come port " + com + ", baud = " + baud + " with a max buffer of " + buffer);
+            var logger = new Logger(SerialPorts.COM1 ,115200, 128);
+            Debug.Print("Serial logger initialized.");
+
+            //THIS STARTS THE LOGGER
+            Debug.Print("Initiating logger action");
             logger.start();
+            Debug.Print("logger action intiiated.");
+            
+            //THIS STARTS THE PRESSURE UPDATE
+            //Debug.Print("Intiating presser update action");
             //pressureloop.start();
+            //Debug.Print("Pressure update action initiated.");
+
+            //THIS STARTS THE BNO TEMP UPDATE
+            //Debug.Print("Initiating BNO temp update action");
             //bnotemploop.start();
+            //Debug.Print("BNO temp update action initiated.");
+
+            //THIS STARTS THE 100HZ BNO Accel/Gyro update
+            Debug.Print("Intiating BNO 100Hz update action");
             bnoloop.start();
+            Debug.Print("BNO 100Hz action initiated.");
+
+
+            //THIS STARTS THE Geiger UPDATE.
+            Debug.Print("Initating Geiger update action...");
             geigerloop.start();
+            Debug.Print("Geiger update action initiated.");
         }
 
         private static void test_serial_write(string dataToWrite) {

@@ -32,6 +32,8 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
+    <Compile Include="Event Data\BNOTempData.cs" />
+    <Compile Include="Work Items\BNOTempUpdater.cs" />
     <Compile Include="Work Items\BNOUpdater100Hz.cs" />
     <Compile Include="Event Listeners\ExampleListener.cs" />
     <Compile Include="Abstract\IEventListener.cs" />
@@ -39,6 +41,8 @@
     <Compile Include="Event Data\BnoData.cs" />
     <Compile Include="Abstract\IAction.cs" />
     <Compile Include="Abstract\IEventData.cs" />
+    <Compile Include="Work Items\GeigerData.cs" />
+    <Compile Include="Work Items\GeigerUpdater.cs" />
     <Compile Include="Work Items\PressureUpdater.cs" />
     <Compile Include="Event Data\PressureData.cs" />
     <Compile Include="Sensors\BMP180.cs" />

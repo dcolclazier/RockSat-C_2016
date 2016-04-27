@@ -12,10 +12,4 @@ namespace RockSatC_2016.Event_Data {
         public double accel_z { get; set; }
 
     }
-
-    public class BNOTempData : IEventData
-    {
-        public bool loggable => true;
-        public double temp { get; set; }
-    }
 }
