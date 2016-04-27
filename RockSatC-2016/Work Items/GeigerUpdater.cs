@@ -4,6 +4,7 @@ using Microsoft.SPOT.Hardware;
 using RockSatC_2016.Abstract;
 using RockSatC_2016.Event_Data;
 using RockSatC_2016.Utility;
+using SecretLabs.NETMF.Hardware.Netduino;
 
 namespace RockSatC_2016.Work_Items {
 
@@ -11,7 +12,7 @@ namespace RockSatC_2016.Work_Items {
 
     public class GeigerUpdater : Action {
 
-        static InterruptPort geiger1;
+        static readonly InterruptPort geiger1 = new InterruptPort(Pins.GPIO_PIN_D2, false, Port.ResistorMode.PullUp, Port.InterruptMode.InterruptEdgeLow);
         //static InterruptPort geiger2;
 
         public GeigerUpdater(Cpu.Pin shieldedGeigerInterrupt, Cpu.Pin unshieldedGeigerInterrupt) {
@@ -21,10 +22,10 @@ namespace RockSatC_2016.Work_Items {
             //    Port.InterruptMode.InterruptEdgeLevelHigh);
             //Debug.Print("Created.");
 
-            Debug.Print("Creating Interrupt Port for shielded geiger counter...");
-            geiger1 = new InterruptPort(shieldedGeigerInterrupt, true, Port.ResistorMode.PullUp,
-                Port.InterruptMode.InterruptEdgeLevelLow);
-            Debug.Print("Created.");
+            //Debug.Print("Creating Interrupt Port for shielded geiger counter...");
+            //geiger1 = new InterruptPort(shieldedGeigerInterrupt, true, Port.ResistorMode.PullUp,
+            //    Port.InterruptMode.InterruptEdgeLevelLow);
+            //Debug.Print("Created.");
 
 
             //Debug.Print("Creating Interrupt Port for unshielded geiger counter...");
