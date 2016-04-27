@@ -99,12 +99,13 @@ namespace RockSatC_2016.Event_Listeners {
 
         public void MyTrigger(EventType eventName, IEventData trigger) {
             if (!trigger.loggable) return;
-
+            Debug.Print("MyTrigger triggered...");
             dataToBeWrittenTo.Enqueue(new QueuePacket(eventName, trigger));
         }
 
 
         public void Start() {
+            Debug.Print("Starting logger happy day....");
             FlightComputer.OnEventTriggered += MyTrigger;
             start();
         }
