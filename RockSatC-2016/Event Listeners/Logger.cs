@@ -40,26 +40,34 @@ namespace RockSatC_2016.Event_Listeners {
             if (packet != null) { 
                 switch (packet.Name) {
                     case EventType.BNOUpdate1Hz:
+                        Debug.Print("Data determined to be BNO Temp Update");
                         var tempData = packet.EventData as BNOTempData;
                         if (tempData != null)
                             logEntry = "T:" + tempData.temp + ";";
+                        Debug.Print("Data log entry updated.");
                         break;
                     case EventType.GeigerUpdate:
+                        Debug.Print("Data determined to be Geiger Update");
                         var geigerData = packet.EventData as GeigerData;
                         if (geigerData != null)
                             logEntry = "G:" + geigerData.shielded_geigerCount + ":" + geigerData.unshielded_geigerCount +
                                        ";";
+                        Debug.Print("Data log entry updated.");
                         break;
                     case EventType.PressureUpdate:
+                        Debug.Print("Data determined to be Pressure Update");
                         var pressureData = packet.EventData as PressureData;
                         if (pressureData != null)
                             logEntry = "P:" + pressureData.Pressure + ":" + pressureData.Altitude + ":" +
                                        pressureData.Temp + ";";
+                        Debug.Print("Data log entry updated.");
                         break;
                     case EventType.BNOUpdate100Hz:
+                        Debug.Print("Data determined to be BNO Accel Update");
                         var bnoData = packet.EventData as BNOData;
                         if (bnoData != null) logEntry = "B:" + bnoData.gyro_x + ":" + bnoData.gyro_y + ":" + bnoData.gyro_z 
                                                         + bnoData.accel_x + ":" + bnoData.accel_y + ":" + bnoData.accel_z + ";";
+                        Debug.Print("Data log entry updated.");
                         break;
                     
                     default:
