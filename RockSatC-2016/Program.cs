@@ -43,14 +43,14 @@ namespace RockSatC_2016 {
             var baud = 115200;
             var buffer = 512;
             var com = SerialPorts.COM1;
-            Debug.Print("About to initialize Serial logger on come port " + com + ", baud = " + baud + " with a max buffer of " + buffer);
+            Debug.Print("About to initialize Serial logger on com port " + com + ", baud = " + baud + " with a max buffer of " + buffer);
             var logger = new Logger(com,baud, buffer);
             Debug.Print("Serial logger initialized.");
 
             //THIS STARTS THE LOGGER
             Debug.Print("Initiating logger action");
-            logger.start();
-            Debug.Print("logger action intiiated.");
+            logger.Start();
+            Debug.Print("logger action initiated.");
             
             //THIS STARTS THE PRESSURE UPDATE
             //Debug.Print("Intiating presser update action");

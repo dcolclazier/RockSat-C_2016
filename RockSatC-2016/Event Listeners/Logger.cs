@@ -106,6 +106,7 @@ namespace RockSatC_2016.Event_Listeners {
 
         public void Start() {
             FlightComputer.OnEventTriggered += MyTrigger;
+            start();
         }
 
         public void Stop() {
