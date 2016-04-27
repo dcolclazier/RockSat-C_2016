@@ -13,15 +13,15 @@ namespace RockSatC_2016.Work_Items {
             var shieldedGeiger = new InterruptPort(shieldedGeigerInterrupt,true,Port.ResistorMode.PullUp,
                 Port.InterruptMode.InterruptEdgeLevelLow);
             Debug.Print("Created.");
-            Debug.Print("Creating Interrupt Port for unshielded geiger counter...");
-            var unshieldedGeiger = new InterruptPort(unshieldedGeigerInterrupt, true, Port.ResistorMode.PullUp,
-                Port.InterruptMode.InterruptEdgeLevelLow);
-            Debug.Print("Created.");
+            //Debug.Print("Creating Interrupt Port for unshielded geiger counter...");
+            //var unshieldedGeiger = new InterruptPort(unshieldedGeigerInterrupt, true, Port.ResistorMode.PullUp,
+            //    Port.InterruptMode.InterruptEdgeLevelLow);
+            //Debug.Print("Created.");
 
             Debug.Print("Adding interrupt action for shielded geiger counter.");
             shieldedGeiger.OnInterrupt += Shielded_Counter;
-            Debug.Print("Adding interrupt action for unshielded geiger counter.");
-            unshieldedGeiger.OnInterrupt += Unshielded_Counter;
+            //Debug.Print("Adding interrupt action for unshielded geiger counter.");
+            //unshieldedGeiger.OnInterrupt += Unshielded_Counter;
 
             workItem = new ThreadPool.WorkItem(GatherCounts, EventType.GeigerUpdate, geigerData, true);
         }
