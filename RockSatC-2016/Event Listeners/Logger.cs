@@ -18,6 +18,7 @@ namespace RockSatC_2016.Event_Listeners {
 
             maxBufferSize = maxBuffer;
             open_logger = new SerialPort(comPort, baud);
+            open_logger.Open();
 
             workItem = new ThreadPool.WorkItem(LogWorker, isPersistent: true);
             FlightComputer.Instance.Execute(workItem);

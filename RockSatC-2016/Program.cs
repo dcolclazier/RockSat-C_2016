@@ -1,5 +1,6 @@
 ﻿using System.IO.Ports;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
@@ -13,9 +14,16 @@ using SecretLabs.NETMF.Hardware.Netduino;
 namespace RockSatC_2016 {
 
     public static class Program {
+        private static SerialPort serial;
        
         public static void Main() {
+            //testing some serial stuff...
+            //serial = new SerialPort(SerialPorts.COM1,115200,Parity.None, 8, StopBits.One);
+            //serial.Open();
+            //serial.DataReceived += new SerialDataReceivedEventHandler(testing_serial_receive);
+            //test_serial_write("Testing initial openlog mayhem....");
 
+            
             //var pressureloop = new PressureUpdater();
             var bnoloop = new BNOUpdater100Hz();
             //var bnotemploop = new BNOTempUpdater();
@@ -23,12 +31,27 @@ namespace RockSatC_2016 {
             var logger = new Logger(SerialPorts.COM1 ,115200, 128);
 
             logger.start();
-
             //pressureloop.start();
             //bnotemploop.start();
             bnoloop.start();
             geigerloop.start();
         }
+
+        private static void test_serial_write(string dataToWrite) {
+            var bytes = Encoding.UTF8.GetBytes(dataToWrite);
+            serial.Write(bytes,0,bytes.Length);
+        }
+
+        private static void testing_serial_receive(object sender, SerialDataReceivedEventArgs e) {
+            System.Threading.Thread.Sleep(100);
+
+            //create array for incoming bytes, read the bytes, then convert to string
+            var bytes = new byte[serial.BytesToRead];
+            serial.Read(bytes, 0, bytes.Length);
+            var line = System.Text.Encoding.UTF8.GetChars(bytes).ToString();
+            Debug.Print("Serial Echo: " + line);
+        }
+
         public static void custom_delay_usec(uint time) {
             var delayStart = Microsoft.SPOT.Hardware.Utility.GetMachineTime().Ticks;
             while (Microsoft.SPOT.Hardware.Utility.GetMachineTime().Ticks - delayStart < time*10) ;
