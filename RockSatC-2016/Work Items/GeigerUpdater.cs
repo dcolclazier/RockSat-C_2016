@@ -4,6 +4,7 @@ using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using RockSatC_2016.Abstract;
 using RockSatC_2016.Event_Data;
+using RockSatC_2016.Flight_Computer;
 using RockSatC_2016.Utility;
 using SecretLabs.NETMF.Hardware.Netduino;
 
@@ -27,6 +28,7 @@ namespace RockSatC_2016.Work_Items {
             unshieldedGeiger.OnInterrupt += Unshielded_Counter;
 
             workItem = new ThreadPool.WorkItem(GatherCounts, EventType.GeigerUpdate, geigerData, true);
+            FlightComputer.Instance.Execute(workItem);
         }
 
         private void Shielded_Counter(UInt32 data1, UInt32 data2, DateTime time) {
@@ -41,6 +43,7 @@ namespace RockSatC_2016.Work_Items {
 
         private void GatherCounts() {
             Thread.Sleep(5000);
+            Debug.Print("Gathering Geiger Data Counts.");
             geigerData.shielded_geigerCount = shieldedCounts;
             shieldedCounts = 0;
             geigerData.unshielded_geigerCount = unshieldedCounts;
