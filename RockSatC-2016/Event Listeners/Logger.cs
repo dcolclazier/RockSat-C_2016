@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.IO.Ports;
+using Microsoft.SPOT;
 using RockSatC_2016.Abstract;
 using RockSatC_2016.Event_Data;
 using RockSatC_2016.Flight_Computer;
 using RockSatC_2016.Utility;
 using RockSatC_2016.Work_Items;
+using IEventListener = RockSatC_2016.Abstract.IEventListener;
 
 namespace RockSatC_2016.Event_Listeners {
     public class Logger : Action, IEventListener {
@@ -17,16 +19,22 @@ namespace RockSatC_2016.Event_Listeners {
         public Logger(string comPort, int baud, int maxBuffer = 512) {
 
             maxBufferSize = maxBuffer;
+            Debug.Print("Initializing serial port...");
             open_logger = new SerialPort(comPort, baud);
+            Debug.Print("Serial port initialized... opening serial port.");
             open_logger.Open();
+            Debug.Print("Serial port opened.");
 
+            Debug.Print("Adding Logger thread to threadpool...");
             workItem = new ThreadPool.WorkItem(LogWorker, isPersistent: true);
+            Debug.Print("Executing logger thread...");
             FlightComputer.Instance.Execute(workItem);
         }
 
         private void LogWorker() {
             if (dataToBeWrittenTo.Count == 0) return;
 
+            Debug.Print("Data found to be written...");
             var packet = dataToBeWrittenTo.Dequeue() as QueuePacket;
             var logEntry = "";
             if (packet != null) { 

@@ -44,7 +44,7 @@ namespace RockSatC_2016 {
             var buffer = 512;
             var com = SerialPorts.COM1;
             Debug.Print("About to initialize Serial logger on come port " + com + ", baud = " + baud + " with a max buffer of " + buffer);
-            var logger = new Logger(SerialPorts.COM1 ,115200, 128);
+            var logger = new Logger(com,baud, buffer);
             Debug.Print("Serial logger initialized.");
 
             //THIS STARTS THE LOGGER
