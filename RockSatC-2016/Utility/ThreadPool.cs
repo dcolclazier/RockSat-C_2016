@@ -100,15 +100,17 @@ namespace RockSatC_2016.Utility {
                 }
                 //if we didn't get a work item out of the queue (it was empty) go back to waiting
                 if (workItem?.Action == null) continue;
-
+                Debug.Print("We have a valid action to execute.");
                 //if we did get a work item, execute it's action.
                 try
                 {
+                    Debug.Print("Executing action.");
                     workItem.Action();
                     //if the action was an event, eventData that the event has completed
-                    if (workItem.EventType != EventType.None)
+                    if (workItem.EventType != EventType.None) {
+                        Debug.Print("Event found... triggering event.");
                         FlightComputer.Instance.TriggerEvent(workItem.EventType, workItem.EventData);
-
+                    }
                     if (workItem.IsPersistent) QueueWorkItem(workItem);
                 }
                 catch (Exception e)

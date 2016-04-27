@@ -1,4 +1,5 @@
-﻿using RockSatC_2016.Abstract;
+﻿using Microsoft.SPOT;
+using RockSatC_2016.Abstract;
 using RockSatC_2016.Event_Data;
 using RockSatC_2016.Utility;
 
@@ -19,7 +20,9 @@ namespace RockSatC_2016.Flight_Computer {
         public delegate void EventTriggered(EventType eventName, IEventData trigger);
 
         public void TriggerEvent(EventType eventType, IEventData trigger) {
+
             OnEventTriggered?.Invoke(eventType, trigger);
+            Debug.Print("Event Triggered.");
         }
     }
 
