@@ -10,7 +10,7 @@ namespace RockSatC_2016.Abstract {
         public void start()
         {
             workItem.SetRepeat(true);
-            FlightComputer.Instance.Execute(workItem);
+            //FlightComputer.Instance.Execute(workItem);
         }
 
         public void stop()
