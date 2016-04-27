@@ -210,10 +210,10 @@ namespace RockSatC_2016.Sensors {
         public Bno055(I2CDevice.Configuration slaveConfig, Bno055OpMode mode = Bno055OpMode.Operation_Mode_Ndof) {
             _slaveConfig = slaveConfig;
             Address = slaveConfig.Address;
-
+            Debug.Print("Begin BNO Sensor init...");
             while (!Init(mode))
             {
-                Debug.Print("9dof sensor not detected...");
+                Debug.Print("9dof sensor not detected - init failed...");
             }
             SetExtCrystalUse(true);
         }
@@ -222,15 +222,21 @@ namespace RockSatC_2016.Sensors {
 
         public bool Init(Bno055OpMode mode = Bno055OpMode.Operation_Mode_Ndof) {
             //var id = Read8(Bno055Registers.Bno055_Chip_Id_Addr);
+            Debug.Print("Initializing BNO Sensor... reading sensor chip id address.");
             var id = I2CBus.Instance().read8(_slaveConfig,(byte)Bno055Registers.Bno055_Chip_Id_Addr);
+            Debug.Print("Chip Id address: " + id);
             if (id != _bno055Id) {
-                Debug.Print("We didn't get the right chip address, waiting then trying again.");
+                Debug.Print("We didn't get the right chip address, waiting then trying again. Expected " + _bno055Id);
                 Thread.Sleep(500);
+                Debug.Print("Checking Chip ID address again...");
                 id = Read8(Bno055Registers.Bno055_Chip_Id_Addr);
-                if (id != _bno055Id) return false;
+                if (id != _bno055Id) {
+                    Debug.Print("Chip ID match failed. The id was " + id + " and expected was " + _bno055Id);
+                    return false;
+                }
             }
             else {
-                Debug.Print("We read the Chip ID Address!");
+                Debug.Print("We successfully matched chip ID address - communication with sensor established.");
             }
 
             SetMode(Bno055OpMode.Operation_Mode_Config);
