@@ -12,32 +12,18 @@ namespace RockSatC_2016.Work_Items {
 
     public class GeigerUpdater : Action {
 
-        static readonly InterruptPort geiger1 = new InterruptPort(Pins.GPIO_PIN_D2, false, Port.ResistorMode.PullUp, Port.InterruptMode.InterruptEdgeLow);
+        static readonly InterruptPort shieldedGeiger = new InterruptPort(Pins.GPIO_PIN_D2, false, Port.ResistorMode.PullUp, Port.InterruptMode.InterruptEdgeLow);
+        static readonly InterruptPort unshieldedGeiger = new InterruptPort(Pins.GPIO_PIN_D3, false, Port.ResistorMode.PullUp, Port.InterruptMode.InterruptEdgeLow);
         //static InterruptPort geiger2;
 
         public GeigerUpdater(Cpu.Pin shieldedGeigerInterrupt, Cpu.Pin unshieldedGeigerInterrupt) {
 
-            //Debug.Print("Creating Interrupt Port for shielded geiger counter...");
-            //var shieldedGeiger = new InterruptPort(shieldedGeigerInterrupt,true,Port.ResistorMode.PullUp,
-            //    Port.InterruptMode.InterruptEdgeLevelHigh);
-            //Debug.Print("Created.");
-
-            //Debug.Print("Creating Interrupt Port for shielded geiger counter...");
-            //geiger1 = new InterruptPort(shieldedGeigerInterrupt, true, Port.ResistorMode.PullUp,
-            //    Port.InterruptMode.InterruptEdgeLevelLow);
-            //Debug.Print("Created.");
-
-
-            //Debug.Print("Creating Interrupt Port for unshielded geiger counter...");
-            //var unshieldedGeiger = new InterruptPort(unshieldedGeigerInterrupt, true, Port.ResistorMode.PullUp,
-            //    Port.InterruptMode.InterruptEdgeLevelLow);
-            //Debug.Print("Created.");
-
-            Debug.Print("Adding interrupt action for shielded geiger counter.");
+            
+           Debug.Print("Adding interrupt action for shielded geiger counter.");
             //shieldedGeiger.OnInterrupt += new NativeEventHandler(Shielded_Counter);
-            geiger1.OnInterrupt += new NativeEventHandler(Shielded_Counter);
+            shieldedGeiger.OnInterrupt += Shielded_Counter;
             //Debug.Print("Adding interrupt action for unshielded geiger counter.");
-            //unshieldedGeiger.OnInterrupt += Unshielded_Counter;
+            unshieldedGeiger.OnInterrupt += Unshielded_Counter;
 
             workItem = new ThreadPool.WorkItem(GatherCounts, EventType.GeigerUpdate, geigerData, true);
         }
