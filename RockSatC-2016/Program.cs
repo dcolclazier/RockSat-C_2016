@@ -10,10 +10,10 @@ namespace RockSatC_2016 {
 
         private static Bmp180 _bmpSensor;
         private static Bno055 _bnoSensor;
-        private static I2CDevice.Configuration _bnoConfig;
+        //private static I2CDevice.Configuration _bnoConfig;
         public static void Main() {
 
-            _bnoConfig = new I2CDevice.Configuration(0x28,100);
+            //_bnoConfig = new I2CDevice.Configuration(0x28,100);
             //ultralowpower, ~45hz
             //standard, ~35hz
             _bmpSensor = new Bmp180(0x77);
@@ -39,20 +39,20 @@ namespace RockSatC_2016 {
 
         }
 
-        private static int read16(byte lsbRegister, byte msbRegister) {
-            var lsb = new byte[1];
-            I2CBus.Instance().ReadRegister(_bnoConfig, lsbRegister, lsb, 1000);
-            var msb = new byte[1];
-            I2CBus.Instance().ReadRegister(_bnoConfig, msbRegister, msb, 1000);
-            var test = (((msb[0]) << 8) | (lsb[0]));
-            return test;
-        }
-        private static byte read8(byte reg)
-        {
-            byte[] buffer = new byte[1];
-            I2CBus.Instance().ReadRegister(_bnoConfig, reg, buffer, 1000);
-            return buffer[0];
-        }
+        //private static int read16(byte lsbRegister, byte msbRegister) {
+        //    var lsb = new byte[1];
+        //    I2CBus.Instance().ReadRegister(_bnoConfig, lsbRegister, lsb, 1000);
+        //    var msb = new byte[1];
+        //    I2CBus.Instance().ReadRegister(_bnoConfig, msbRegister, msb, 1000);
+        //    var test = (((msb[0]) << 8) | (lsb[0]));
+        //    return test;
+        //}
+        //private static byte read8(byte reg)
+        //{
+        //    byte[] buffer = new byte[1];
+        //    I2CBus.Instance().ReadRegister(_bnoConfig, reg, buffer, 1000);
+        //    return buffer[0];
+        //}
         private static void TestBNO() {
 
             //All default values should be 0.0 unless otherwise noted
@@ -69,24 +69,27 @@ namespace RockSatC_2016 {
 
             //doesn't work... seems to respond to accelerations, but numbers wrong.
             //No default values when accel = 0, either.
-            double testAccelX = read16(0x08, 0x09);
-            double testAccelY = read16(0x0A, 0x0B);
-            double testAccelZ = read16(0x0C, 0x0D);
-            Debug.Print("X: " + (testAccelX /= 100.0).ToString("F1") +
-                       " Y: " + (testAccelY /= 100.0).ToString("F1") +
-                       " Z: " + (testAccelZ /= 100.0).ToString("F1"));
+            Vector accelVector = _bnoSensor.GetVector(Bno055.Bno055VectorType.Vector_Accelerometer);
+            //double testAccelX = read16(0x08, 0x09);
+            //double testAccelY = read16(0x0A, 0x0B);
+            //double testAccelZ = read16(0x0C, 0x0D);
+            Debug.Print("X: " + (accelVector.X /= 100.0).ToString("F1") +
+                       " Y: " + (accelVector.Y /= 100.0).ToString("F1") +
+                       " Z: " + (accelVector.Z /= 100.0).ToString("F1"));
 
             //kinda works, but numbers off? not sure about this one.
-            double testMagX = read16(0x0E, 0x0F);
-            double testMagY = read16(0x10, 0x11);
-            double testMagZ = read16(0x12, 0x13);
-            Debug.Print("X: " + (testMagX /= 16.0).ToString("F1") +
-                       " Y: " + (testMagY /= 16.0).ToString("F1") +
-                       " Z: " + (testMagZ /= 16.0).ToString("F1"));
+            var magVector = _bnoSensor.GetVector(Bno055.Bno055VectorType.Vector_Magnetometer);
+
+            //double testMagX = read16(0x0E, 0x0F);
+            //double testMagY = read16(0x10, 0x11);
+            //double testMagZ = read16(0x12, 0x13);
+            Debug.Print("X: " + (magVector.X /= 16.0).ToString("F1") +
+                       " Y: " + (magVector.Y /= 16.0).ToString("F1") +
+                       " Z: " + (magVector.Z /= 16.0).ToString("F1"));
 
 
             //works
-            double temp = read8(0x34);
+            var temp = _bnoSensor.GetTemp();
             Debug.Print("Temp: " + temp);
 
             Thread.Sleep(500);

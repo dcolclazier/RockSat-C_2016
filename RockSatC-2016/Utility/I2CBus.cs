@@ -10,13 +10,10 @@ namespace RockSatC_2016.Utility
         private static readonly I2CDevice _slave = new I2CDevice(new I2CDevice.Configuration(0, 0));
 
         private static readonly object _locker = new object();
-        public static I2CBus Instance()
-        {
-            lock (_locker)
-            {
+        public static I2CBus Instance() {
+            lock (_locker) {
                 return _instance ?? (_instance = new I2CBus());
             }
-
         }
 
         private I2CBus()
@@ -40,8 +37,7 @@ namespace RockSatC_2016.Utility
             I2CDevice.I2CTransaction[] writeXAction = {
                 I2CDevice.CreateWriteTransaction(writeBuffer)
             };
-            lock (_slave)
-            {
+            lock (_locker) {
                 transferred = _slave.Execute(writeXAction, transactionTimeout);
             }
             if (transferred != writeBuffer.Length)
@@ -57,8 +53,7 @@ namespace RockSatC_2016.Utility
                 I2CDevice.CreateReadTransaction(readBuffer)
             };
 
-            lock (_slave)
-            {
+            lock (_locker) {
                 transferred = _slave.Execute(readXAction, transactionTimeout);
             }
             if (transferred != readBuffer.Length)
@@ -74,10 +69,8 @@ namespace RockSatC_2016.Utility
                     I2CDevice.CreateWriteTransaction(writeBuffer),
                     I2CDevice.CreateReadTransaction(readBuffer),
                 };
-            lock (_slave)
-            {
+            lock (_locker) {
                 var transferred = _slave.Execute(i2cTxRx, transactionTimeout);
-
             }
         }
 
