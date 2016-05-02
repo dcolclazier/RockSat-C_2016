@@ -32,13 +32,12 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
-    <Compile Include="Event Data\BNOTempData.cs" />
     <Compile Include="Work Items\BNOTempUpdater.cs" />
-    <Compile Include="Work Items\BNOUpdater100Hz.cs" />
+    <Compile Include="Work Items\SerialBNOActions.cs" />
     <Compile Include="Event Listeners\ExampleListener.cs" />
     <Compile Include="Abstract\IEventListener.cs" />
     <Compile Include="Event Listeners\Logger.cs" />
-    <Compile Include="Event Data\BnoData.cs" />
+    <Compile Include="Event Data\BNOData.cs" />
     <Compile Include="Abstract\IAction.cs" />
     <Compile Include="Abstract\IEventData.cs" />
     <Compile Include="Work Items\GeigerData.cs" />

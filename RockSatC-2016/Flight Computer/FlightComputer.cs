@@ -16,13 +16,11 @@ namespace RockSatC_2016.Flight_Computer {
         }
         public static event EventTriggered OnEventTriggered;
 
-        //object should be EventArgs
         public delegate void EventTriggered(EventType eventName, IEventData trigger);
 
         public void TriggerEvent(EventType eventType, IEventData trigger) {
 
             OnEventTriggered?.Invoke(eventType, trigger);
-            Debug.Print("Event Triggered.");
         }
     }
 

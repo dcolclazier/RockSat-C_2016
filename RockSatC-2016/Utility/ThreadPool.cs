@@ -100,15 +100,16 @@ namespace RockSatC_2016.Utility {
                 }
                 //if we didn't get a work item out of the queue (it was empty) go back to waiting
                 if (workItem?.Action == null) continue;
-                Debug.Print("We have a valid action to execute.");
+                //Debug.Print("We have a valid action to execute.");
                 //if we did get a work item, execute it's action.
                 try
                 {
-                    Debug.Print("Executing action.");
+                    //Debug.Print("Executing action.");
                     workItem.Action();
                     //if the action was an event, eventData that the event has completed
-                    if (workItem.EventType != EventType.None) {
-                        Debug.Print("Event found... triggering event.");
+                    if (workItem.EventType != EventType.None)
+                    {
+                        //Debug.Print("Event found... triggering event.");
                         FlightComputer.Instance.TriggerEvent(workItem.EventType, workItem.EventData);
                     }
                     if (workItem.IsPersistent) QueueWorkItem(workItem);
@@ -118,41 +119,19 @@ namespace RockSatC_2016.Utility {
                     Debug.Print("ThreadPool: Unhandled error executing action - " + e.Message + e.InnerException);
                     Debug.Print("StackTrace: " + e.StackTrace);
                 }
+
+                ////Debug.Print("Executing action.");
+                //workItem.Action();
+                ////if the action was an event, eventData that the event has completed
+                //if (workItem.EventType != EventType.None)
+                //{
+                //    //Debug.Print("Event found... triggering event.");
+                //    FlightComputer.Instance.TriggerEvent(workItem.EventType, workItem.EventData);
+                //}
+                //if (workItem.IsPersistent) QueueWorkItem(workItem);
             }
 
         }
-        //private static void ThreadWorker_old() {
-
-        //    while (true) {
-        //        //Wait for pulse from ThreadPool, signifying a new work item has been queued
-        //        ThreadSynch.WaitOne();
-
-        //        ThreadStart workItem = null;
-
-        //        //critical section
-        //        lock (Locker) {
-        //            if (ThreadActions.Count > 0)
-        //                //pull the next action off of the queue
-        //                workItem = ThreadActions.Dequeue() as ThreadStart;
-        //            else {
-        //                //the thread is empty, and we're in a locked section.. 
-        //                //reset the mutex so that this loop waits for the next pulse, or till the next action is queued
-        //                ThreadSynch.Reset();
-        //            }
-        //        }
-        //        //if we didn't get a work item out of the queue (it was empty) go back to waiting
-        //        if (workItem == null) continue;
-
-        //        //if we did get a work item, execute it
-        //        try {
-        //            workItem();
-        //        }
-        //        catch (Exception e) {
-        //            Debug.Print("ThreadPool: Unhandled error executing action - " + e.Message + e.InnerException);
-        //            Debug.Print("StackTrace: " + e.StackTrace);
-        //        }
-        //    }
-
-        //}
+       
     }
 }

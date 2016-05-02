@@ -14,20 +14,23 @@ using SecretLabs.NETMF.Hardware.Netduino;
 namespace RockSatC_2016 {
 
     public static class Program {
-        private static SerialPort serial;
        
         public static void Main() {
-            //testing some serial stuff...
-            //serial = new SerialPort(SerialPorts.COM1,115200,Parity.None, 8, StopBits.One);
-            //serial.Open();
-            //serial.DataReceived += new SerialDataReceivedEventHandler(testing_serial_receive);
-            //test_serial_write("Testing initial openlog mayhem....");
 
-            
-            //var pressureloop = new PressureUpdater();
-            //Debug.Print("About to initialize the BNO Sensor 100 Hz update action....");
-            //var bnoloop = new BNOUpdater100Hz();
-            //Debug.Print("BNO action initialized.");
+            //THIS SECTION CREATES / INITIALIZES THE SERIAL LOGGER
+            Debug.Print("Flight computer started successfully. Beginning INIT.");
+            var baud = 115200;
+            var buffer = 2048;
+            var com = SerialPorts.COM1;
+            Debug.Print("Initializing Serial logger on com port " + com + ", baud = " + baud + " with a max buffer of " + buffer);
+            var logger = new Logger(com, baud, buffer);
+            Debug.Print("Serial logger initialized.");
+
+            //THIS SECTION CREATES/INITIALIZES THE SERIAL BNO 100HZ UPDATER
+            Debug.Print("Initializing BNO Sensor on Serial Port COM4, 1 stop bit, 0 parity, 8 data bits");
+            var bnoloop = new SerialBNOActions();
+            bnoloop.Start();
+            Debug.Print("BNO Sensor initialized.");
 
             //THIS SECTION CREATES/INITIALIZES THE BNO TEMPERATURE UPDATER
             //Debug.Print("About to initialize the BNO temperature update action");
@@ -35,58 +38,29 @@ namespace RockSatC_2016 {
             //Debug.Print("BNO temp update action initated.");
 
             //THIS SECTION CREATES/INITIALIZES THE GEIGER COUNTER UPDATER
-            Debug.Print("About to initialize the Geiger counter update action");
-            var geigerloop = new GeigerUpdater(Pins.GPIO_PIN_D2, Pins.GPIO_PIN_D3);
-            Debug.Print("Geiger action initialized.");
+            //Debug.Print("About to initialize the Geiger counter update action");
+            //var geigerloop = new GeigerUpdater(Pins.GPIO_PIN_D2, Pins.GPIO_PIN_D3);
+            //Debug.Print("Geiger action initialized.");
 
-            //THIS SECTION CREATES/INITIALIZES THE SERIAL LOGGER
-            var baud = 115200;
-            var buffer = 512;
-            var com = SerialPorts.COM1;
-            Debug.Print("About to initialize Serial logger on com port " + com + ", baud = " + baud + " with a max buffer of " + buffer);
-            var logger = new Logger(com,baud, buffer);
-            Debug.Print("Serial logger initialized.");
+            Debug.Print("INIT Complete. Continuing with boot.");
 
             //THIS STARTS THE LOGGER
-            Debug.Print("Initiating logger action");
+            Debug.Print("Starting logger...");
             logger.Start();
-            Debug.Print("logger action initiated.");
-            
-            //THIS STARTS THE PRESSURE UPDATE
-            //Debug.Print("Intiating presser update action");
-            //pressureloop.start();
-            //Debug.Print("Pressure update action initiated.");
+            Debug.Print("Logger started successfully.");
+
 
             //THIS STARTS THE BNO TEMP UPDATE
             //Debug.Print("Initiating BNO temp update action");
             //bnotemploop.start();
             //Debug.Print("BNO temp update action initiated.");
 
-            //THIS STARTS THE 100HZ BNO Accel/Gyro update
-            //Debug.Print("Intiating BNO 100Hz update action");
-            //bnoloop.start();
-            //Debug.Print("BNO 100Hz action initiated.");
-
-
             //THIS STARTS THE Geiger UPDATE.
-            Debug.Print("Initating Geiger update action...");
-            geigerloop.start();
-            Debug.Print("Geiger update action initiated.");
-        }
+            //Debug.Print("Initating Geiger update action...");
+            //geigerloop.start();
+            //Debug.Print("Geiger update action initiated.");
 
-        private static void test_serial_write(string dataToWrite) {
-            var bytes = Encoding.UTF8.GetBytes(dataToWrite);
-            serial.Write(bytes,0,bytes.Length);
-        }
-
-        private static void testing_serial_receive(object sender, SerialDataReceivedEventArgs e) {
-            System.Threading.Thread.Sleep(100);
-
-            //create array for incoming bytes, read the bytes, then convert to string
-            var bytes = new byte[serial.BytesToRead];
-            serial.Read(bytes, 0, bytes.Length);
-            var line = System.Text.Encoding.UTF8.GetChars(bytes).ToString();
-            Debug.Print("Serial Echo: " + line);
+            Debug.Print("Flight computer boot successful.");
         }
 
         public static void custom_delay_usec(uint time) {
@@ -95,5 +69,7 @@ namespace RockSatC_2016 {
 
         }
     }
+
+
 }
 

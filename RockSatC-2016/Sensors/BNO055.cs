@@ -1,14 +1,24 @@
-﻿using System.Threading;
+﻿using System;
+using System.IO;
+using System.IO.Ports;
+using System.Text;
+using System.Threading;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using RockSatC_2016.Utility;
 
 namespace RockSatC_2016.Sensors {
-    public class Bno055 {
+    
+    public class SerialBNO {
+        private const int _baud = 115200;
+        private SerialPort _comPort;
+        private Bno055OpMode _mode;
 
-        private readonly I2CDevice.Configuration _slaveConfig;
+        private readonly object locker = new object();
 
-        public enum Bno055Registers : byte {
+        #region BNO055 Registers
+        public enum Bno055Registers : byte
+        {
             /* Page id register definition */
             Bno055_Page_Id_Addr = 0X07,
 
@@ -156,14 +166,14 @@ namespace RockSatC_2016.Sensors {
             Mag_Radius_Lsb_Addr = 0X69,
             Mag_Radius_Msb_Addr = 0X6A
         }
-
-        private enum Bno055PowerMode : byte {
+        private enum Bno055PowerMode : byte
+        {
             Power_Mode_Normal = 0X00,
             Power_Mode_Lowpower = 0X01,
             Power_Mode_Suspend = 0X02
         }
-
-        public enum Bno055OpMode : byte {
+        public enum Bno055OpMode : byte
+        {
             /* Operation mode settings*/
             Operation_Mode_Config = 0X00,
             Operation_Mode_Acconly = 0X01,
@@ -179,16 +189,16 @@ namespace RockSatC_2016.Sensors {
             Operation_Mode_Ndof_Fmc_Off = 0X0B,
             Operation_Mode_Ndof = 0X0C
         }
-
-        public struct Bno055RevInfo {
+        public struct Bno055RevInfo
+        {
             public uint AccelRev;
             public uint MagRev;
             public uint GyroRev;
             public uint SwRev;
             public uint BlRev;
         }
-
-        public enum Bno055VectorType {
+        public enum Bno055VectorType
+        {
             Vector_Accelerometer = Bno055Registers.Bno055_Accel_Data_X_Lsb_Addr,
             Vector_Magnetometer = Bno055Registers.Bno055_Mag_Data_X_Lsb_Addr,
             Vector_Gyroscope = Bno055Registers.Bno055_Gyro_Data_X_Lsb_Addr,
@@ -196,207 +206,251 @@ namespace RockSatC_2016.Sensors {
             Vector_Linearaccel = Bno055Registers.Bno055_Linear_Accel_Data_X_Lsb_Addr,
             Vector_Gravity = Bno055Registers.Bno055_Gravity_Data_X_Lsb_Addr
         }
+        #endregion
 
-        //public Bno055(byte address = 0x28, int clockKHz = 100, Bno055OpMode mode = Bno055OpMode.Operation_Mode_Ndof) {
-        //    _slaveConfig = new I2CDevice.Configuration(address, clockKHz);
-        //    Address = address;
-
-        //    while (!Init(mode))
-        //    {
-        //        Debug.Print("9dof sensor not detected...");
-        //    }
-        //    SetExtCrystalUse(true);
-        //}
-        public Bno055(I2CDevice.Configuration slaveConfig, Bno055OpMode mode = Bno055OpMode.Operation_Mode_Ndof) {
-            _slaveConfig = slaveConfig;
-            Address = slaveConfig.Address;
-            Debug.Print("Begin BNO Sensor init...");
-            while (!Init(mode))
-            {
-                Debug.Print("9dof sensor not detected - init failed...");
-            }
-            SetExtCrystalUse(true);
-        }
-
-        public ushort Address { get; }
-
-        public bool Init(Bno055OpMode mode = Bno055OpMode.Operation_Mode_Ndof) {
-            //var id = Read8(Bno055Registers.Bno055_Chip_Id_Addr);
-            Debug.Print("Initializing BNO Sensor... reading sensor chip id address.");
-            var id = I2CBus.Instance().read8(_slaveConfig,(byte)Bno055Registers.Bno055_Chip_Id_Addr);
-            Debug.Print("Chip Id address: " + id);
-            if (id != _bno055Id) {
-                Debug.Print("We didn't get the right chip address, waiting then trying again. Expected " + _bno055Id);
-                Thread.Sleep(500);
-                Debug.Print("Checking Chip ID address again...");
-                id = Read8(Bno055Registers.Bno055_Chip_Id_Addr);
-                if (id != _bno055Id) {
-                    Debug.Print("Chip ID match failed. The id was " + id + " and expected was " + _bno055Id);
-                    return false;
-                }
-            }
-            else {
-                Debug.Print("We successfully matched chip ID address - communication with sensor established.");
-            }
-
-            SetMode(Bno055OpMode.Operation_Mode_Config);
-            Write8(Bno055Registers.Bno055_Sys_Trigger_Addr, 0x20);
-            while (Read8(Bno055Registers.Bno055_Chip_Id_Addr) != _bno055Id) {
-                Thread.Sleep(10);
-            }
-            Thread.Sleep(300);
-
-            Write8(Bno055Registers.Bno055_Pwr_Mode_Addr, (byte) Bno055PowerMode.Power_Mode_Normal);
-            Thread.Sleep(10);
-
-            Write8(Bno055Registers.Bno055_Page_Id_Addr, 0);
-
-            Write8(Bno055Registers.Bno055_Sys_Trigger_Addr, 0x0);
-            Thread.Sleep(10);
-
-            SetMode(mode);
-            Thread.Sleep(20);
-            return true;
-        }
-
-        public void SetMode(Bno055OpMode mode) {
+        public SerialBNO(string comPort, int readTimeout, int writeTimeout, Bno055OpMode mode = Bno055OpMode.Operation_Mode_Accgyro) {
             _mode = mode;
-            Write8(Bno055Registers.Bno055_Opr_Mode_Addr, (byte) _mode);
-        }
-
-        public Bno055RevInfo GetRevInfo() {
-            var info = new Bno055RevInfo {
-                AccelRev = Read8(Bno055Registers.Bno055_Accel_Rev_Id_Addr),
-                MagRev = Read8(Bno055Registers.Bno055_Mag_Rev_Id_Addr),
-                GyroRev = Read8(Bno055Registers.Bno055_Gyro_Rev_Id_Addr),
-                BlRev = Read8(Bno055Registers.Bno055_Bl_Rev_Id_Addr)
+            Debug.Print("Initialing BNO Serial Port... " + comPort + ", " + _baud + " bps");
+            Debug.Print("ReadTimeout: " + readTimeout);
+            Debug.Print("WriteTimeout: " + writeTimeout);
+            _comPort = new SerialPort(comPort, _baud,0,8,StopBits.One) {
+                ReadTimeout = readTimeout,
+                WriteTimeout = writeTimeout
             };
 
-            uint lsb = Read8(Bno055Registers.Bno055_Sw_Rev_Id_Lsb_Addr);
-            uint msb = Read8(Bno055Registers.Bno055_Sw_Rev_Id_Msb_Addr);
-            info.SwRev = (((msb) << 8) | (lsb));
-            return info;
+            _comPort.Open();
+            
         }
-
-        public void SetExtCrystalUse(bool usextal) {
-            var modeback = _mode;
-
-            SetMode(Bno055OpMode.Operation_Mode_Config);
-            Thread.Sleep(25);
-            Write8(Bno055Registers.Bno055_Page_Id_Addr, 0);
-            Write8(Bno055Registers.Bno055_Sys_Trigger_Addr, usextal ? (byte)0x80 : (byte)0x00);
-            Thread.Sleep(10);
-            /* Set the requested operating mode (see section 3.3) */
-            SetMode(modeback);
-            Thread.Sleep(20);
         
-        }
-
-        public void GetSystemStatus(out int systemStatus, out int selfTestResult, out int systemError) {
-            Write8(Bno055Registers.Bno055_Page_Id_Addr, 0);
-            systemStatus = Read8(Bno055Registers.Bno055_Sys_Stat_Addr);
-            systemError = Read8(Bno055Registers.Bno055_Sys_Err_Addr);
-            selfTestResult = Read8(Bno055Registers.Bno055_Selftest_Result_Addr);
-            Thread.Sleep(200);
-        }
-
-        public void GetCalibration(out int system, out int gyro, out int accel, out int mag) {
-            int calData = Read8(Bno055Registers.Bno055_Calib_Stat_Addr);
-             system = (calData >> 6) & 0x03;
-             gyro = (calData >> 4) & 0x03;
-             accel = (calData >> 2) & 0x03;
-             mag = calData & 0x03;
-        }
-       
-        public Vector GetVector(Bno055VectorType vectorType) {
-            var xyz = new Vector();
-
-            var buffer = ReadLen((Bno055Registers)vectorType, 6);
-
-            var x = buffer[0] | (buffer[1] << 8);
-            var y = buffer[2] | (buffer[3] << 8);
-            var z = buffer[4] | (buffer[5] << 8);
-            switch (vectorType)
-            {
-                case Bno055VectorType.Vector_Magnetometer:
-                    /* 1uT = 16 LSB */
-                    xyz.X = x / 16.0;
-                    xyz.Y = y / 16.0;
-                    xyz.Z = z / 16.0;
-                    break;
-                case Bno055VectorType.Vector_Gyroscope:
-                    /* 1rps = 900 LSB */
-                    xyz.X = x / 900.0;
-                    xyz.Y = y / 900.0;
-                    xyz.Z = z / 900.0;
-                    break;
-                case Bno055VectorType.Vector_Euler:
-                    /* 1 degree = 16 LSB */
-                    xyz.X = x / 16.0;
-                    xyz.Y = y / 16.0;
-                    xyz.Z = z / 16.0;
-                    break;
+        public Vector read_vector(Bno055VectorType vec, int count = 3) {
+            var data = read_bytes((Bno055Registers)vec, count*2);
+            var rawResult = new int[count];
+            for (int i = 0; i < count; i++) {
+                rawResult[i] = ((data[i*2 + 1] << 8) | data[i*2]);
+                if (rawResult[i] > 32767) rawResult[i] -= 65536;
+            }
+            switch (vec) {
                 case Bno055VectorType.Vector_Accelerometer:
+                    return new Vector()
+                    {
+                        X = rawResult[0] / 100.0f,
+                        Y = rawResult[1] / 100.0f,
+                        Z = rawResult[2] / 100.0f
+                    };
+                case Bno055VectorType.Vector_Magnetometer:
+                    return new Vector()
+                    {
+                        X = rawResult[0] / 16.0f,
+                        Y = rawResult[1] / 16.0f,
+                        Z = rawResult[2] / 16.0f
+                    };
+                case Bno055VectorType.Vector_Gyroscope:
+                    return new Vector()
+                    {
+                        X = rawResult[0] / 900.0f,
+                        Y = rawResult[1] / 900.0f,
+                        Z = rawResult[2] / 900.0f
+                    };
+                case Bno055VectorType.Vector_Euler:
+                    return new Vector() {
+                        X = rawResult[0]/16.0f,
+                        Y = rawResult[1]/16.0f,
+                        Z = rawResult[2]/16.0f
+                    };
                 case Bno055VectorType.Vector_Linearaccel:
+                    return new Vector()
+                    {
+                        X = rawResult[0] / 100.0f,
+                        Y = rawResult[1] / 100.0f,
+                        Z = rawResult[2] / 100.0f
+                    };
                 case Bno055VectorType.Vector_Gravity:
-                    /* 1m/s^2 = 100 LSB */
-                    xyz.X = x / 100.0;
-                    xyz.Y = y / 100.0;
-                    xyz.Z = z / 100.0;
-                    break;
+                    return new Vector()
+                    {
+                        X = rawResult[0] / 100.0f,
+                        Y = rawResult[1] / 100.0f,
+                        Z = rawResult[2] / 100.0f
+                    };
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(vec));
+            }
+        }
+
+        public byte[] serial_send(byte[] command, int expectedLength, bool ack = true, int max_tries = 5, int tries = 0) {
+            //Flush COM port to clear before sending
+            _comPort.Flush();
+            //Send Data
+            _comPort.Write(command, 0, command.Length);
+            //Debug.Print("Serial write: 0x"+command[0].ToString("x")+command[1].ToString("x")+command[2].ToString("x") );
+
+            //If no ack needed, we're done.
+            if (!ack) {
+                return null;
+            }
+            Thread.Sleep(65);
+            //get ack response
+            
+            //while (_comPort.BytesToRead < expectedLength) ;
+            int count = _comPort.BytesToRead;
+            var response = new byte[count];
+
+            var readCount = _comPort.Read(response, 0, count);
+            //If we timed out, throw an exception.
+            if (readCount == 0)
+                Debug.Print("Serial ACK timeout...");
+
+            //if we didn't get an error code (0xEE07), we're done.
+            if (response.Length > 0 && !(response[0] == 0xEE && response[1] == 0x07)) return response;
+            //if we tried 5 times to get a non-error ACK and didn't, throw an exception.
+            if (++tries == max_tries)
+                throw new IOException("Exceeded max tries to acknowlege serial command without bus error.");
+
+
+            return serial_send(command, expectedLength, ack, max_tries, tries);
+        }
+
+        public void write_byte(Bno055Registers reg, byte data, bool ack = true) {
+            var command = new byte[5];
+            command[0] = 0xAA; //start byte
+            command[1] = 0x00; //0x00: Write, 0x01: Read
+            command[2] = (byte) reg; // register address
+            command[3] = 1; //Length
+            command[4] = data; //data[0 - n]
+
+            var response = serial_send(command, 2, ack);
+
+            if (ack) verify(response);
+        }
+
+        public void write_bytes(Bno055Registers reg, byte[] data, bool ack = true) {
+            var command = new byte[4 + data.Length];
+            command[0] = 0xAA; //start byte
+            command[1] = 0x00; //0x00: Write, 0x01: Read
+            command[2] = (byte) reg; // register address
+            command[3] = (byte) data.Length; //Length
+            for (var i = 0; i < data.Length; i++) {
+                command[i + 4] = data[i];
             }
 
-            return xyz;
+            var response = serial_send(command, 2, ack);
+
+            if (ack) verify(response);
         }
 
-        public Quaternion GetQuat() {
-
-            /* Read quat data (8 bytes) */
-            var buffer = ReadLen(Bno055Registers.Bno055_Quaternion_Data_W_Lsb_Addr, 8);
-            var w = ((buffer[1]) << 8) | (buffer[0]);
-            var x = ((buffer[3]) << 8) | (buffer[2]);
-            var y = ((buffer[5]) << 8) | (buffer[4]);
-            var z = ((buffer[7]) << 8) | (buffer[6]);
-
-            /* Assign to Quaternion */
-            /* See http://ae-bst.resource.bosch.com/media/products/dokumente/bno055/BST_BNO055_DS000_12~1.pdf
-               3.6.5.5 Orientation (Quaternion)  */
-            const double scale = (1.0 / (1 << 14));
-            return new Quaternion(scale * w, scale* x, scale* y, scale* z);
+        private void verify(byte[] response) {
+            if (response[0] != 0xEE && response[1] != 0x01)
+                throw new IOException("Error writing to register: 0x" + response);
         }
 
-        public int GetTemp() {
-            return Read8(Bno055Registers.Bno055_Temp_Addr);
-        }
+        public byte[] read_bytes(Bno055Registers reg, int expectedLength, bool ack = true) {
+            //build read command
+            var command = new byte[4];
+            command[0] = 0xAA; //start byte
+            command[1] = 0x01; //0x00: Write, 0x01: Read
+            command[2] = (byte) reg; // register address
+            command[3] = (byte) expectedLength; //Length
 
-        //public bool getEvent() {
+            //send read command and get ack
+            var response = serial_send(command, expectedLength+2, ack);
             
-        //}//sensors_event_t*
+            if (response[0] != 0xBB)
+                throw new IOException("Serial Read error: 0x" + bytearraytostring(response));
 
-        //public void getSensor() {
-            
-        //}//sensor_t*
+            var length = response[1];
+            var data = new byte[length];
 
-        private byte Read8(Bno055Registers reg) {
-            byte[] buffer = new byte[1];
-            I2CBus.Instance().ReadRegister(_slaveConfig,(byte)reg,buffer,1000);
-            return buffer[0];
+            for (int i = 2; i < response.Length; i++) {
+                data[i - 2] = response[i];
+            }
+            //Debug.Print("Serial Receive: 0x" + bytearraytostring(data));
+
+            if(data.Length != length)  
+                throw new IOException("Timeout reading serial data...");
+
+            return data;
         }
 
-      
-
-        private byte[] ReadLen(Bno055Registers reg, int length) {
-            var buffer = new byte[length];
-            I2CBus.Instance().Read(_slaveConfig,buffer);
-            return buffer;
+        public string bytearraytostring(byte[] array) {
+            int size = array.Length;
+            string myString = "";
+            for (int i = 0; i < size; i++) {
+                myString += array[i].ToString("x");
+            }
+            return myString;
         }
 
-        private bool Write8(Bno055Registers reg, byte value) {
-            I2CBus.Instance().WriteRegister(_slaveConfig,(byte)reg,value,1000);
+        public byte read_byte(Bno055Registers reg) {
+            return read_bytes(reg, 1)[0];
+        }
+
+        public byte read_signed_byte(Bno055Registers reg) {
+            var data = read_byte(reg);
+            if (data > 127) return (byte) (data - 256);
+            return data;
+        }
+
+        public void setMode(Bno055OpMode mode) {
+            write_byte(Bno055Registers.Bno055_Opr_Mode_Addr, (byte) mode);
+            Thread.Sleep(20);
+        }
+
+        // returns byte array [5] with revision data for accel, mag, gyro, bl, sw, respectively.
+        public byte[] getRevision() {
+            var accel = read_byte(Bno055Registers.Bno055_Accel_Rev_Id_Addr);
+            var mag = read_byte(Bno055Registers.Bno055_Mag_Rev_Id_Addr);
+            var gyro = read_byte(Bno055Registers.Bno055_Gyro_Rev_Id_Addr);
+            var bl = read_byte(Bno055Registers.Bno055_Bl_Rev_Id_Addr);
+            var sw_lsb = read_byte(Bno055Registers.Bno055_Sw_Rev_Id_Lsb_Addr);
+            var sw_msb = read_byte(Bno055Registers.Bno055_Sw_Rev_Id_Msb_Addr);
+            var sw = (byte) ((sw_msb << 8) | sw_lsb);
+
+            return new[] {accel, mag, gyro, bl, sw};
+        }
+
+        public void setExternalCrystal(bool external_crystal) {
+            configMode();
+            write_byte(Bno055Registers.Bno055_Sys_Trigger_Addr, (byte) (external_crystal ? 0x80 : 0x00));
+            opMode();
+        }
+
+        private void configMode() {
+            setMode(Bno055OpMode.Operation_Mode_Config);
+        }
+
+        private void opMode() {
+            setMode(_mode);
+        }
+
+        public bool begin() {
+           
+            configMode();
+            write_byte(Bno055Registers.Bno055_Page_Id_Addr, 0);
+
+            var bnoID = read_byte(Bno055Registers.Bno055_Chip_Id_Addr);
+            Debug.Print("Read chip ID for BNO055: 0x" + bnoID.ToString("x"));
+
+            if (bnoID != Bno055Id) return false;
+
+            //reset the device
+            write_byte(Bno055Registers.Bno055_Sys_Trigger_Addr, 0x20, false);
+
+            //sleep 650 ms after reset for chip to be ready(as suggested in datasheet)
+            Thread.Sleep(650);
+
+            //set to normal power mode
+            write_byte(Bno055Registers.Bno055_Pwr_Mode_Addr, (byte) Bno055PowerMode.Power_Mode_Normal);
+
+            //default to external oscillator
+            write_byte(Bno055Registers.Bno055_Sys_Trigger_Addr, 0x80);
+
+            //enter normal operation mode
+            opMode();
+
             return true;
         }
 
-        private Bno055OpMode _mode;
-        private byte _bno055Id = 0xA0;
+        private const byte Bno055Id = 0xA0;
     }
+
+
 }
