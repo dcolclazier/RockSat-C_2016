@@ -2,7 +2,7 @@
 
 namespace RockSatC_2016.Event_Data {
     
-    public class BNOData : IEventData
+    public struct BNOData : IEventData
     {
         public bool loggable => true;
         public float accel_x { get; set; }

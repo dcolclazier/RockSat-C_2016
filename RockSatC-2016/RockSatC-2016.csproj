@@ -32,21 +32,18 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
-    <Compile Include="Work Items\BNOTempUpdater.cs" />
-    <Compile Include="Work Items\SerialBNOActions.cs" />
+    <Compile Include="Work Items\SerialBNOUpdater.cs" />
     <Compile Include="Event Listeners\ExampleListener.cs" />
     <Compile Include="Event Listeners\Logger.cs" />
     <Compile Include="Event Data\BNOData.cs" />
     <Compile Include="Abstract\IEventData.cs" />
-    <Compile Include="Work Items\GeigerData.cs" />
+    <Compile Include="Event Data\GeigerData.cs" />
     <Compile Include="Work Items\GeigerUpdater.cs" />
-    <Compile Include="Work Items\PressureUpdater.cs" />
     <Compile Include="Event Data\PressureData.cs" />
-    <Compile Include="Sensors\BMP180.cs" />
-    <Compile Include="Sensors\BNO055.cs" />
+    <Compile Include="Drivers\BMP180.cs" />
+    <Compile Include="Drivers\BNO055.cs" />
     <Compile Include="Flight Computer\FlightComputer.cs" />
-    <Compile Include="Event Data\EventType.cs" />
-    <Compile Include="Utility\I2CBus.cs" />
+    <Compile Include="Abstract\EventType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Utility\Quaternion.cs" />

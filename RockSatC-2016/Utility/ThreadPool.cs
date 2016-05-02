@@ -13,28 +13,24 @@ namespace RockSatC_2016.Utility {
         private static readonly ArrayList AvailableThreads = new ArrayList();
         private static readonly Queue ThreadActions = new Queue();
         private static readonly ManualResetEvent ThreadSynch = new ManualResetEvent(false);
+        private static readonly FlightComputer FlightComputer = FlightComputer.Instance;
         private const int MaxThreads = 3;
 
         public class WorkItem {
             public readonly ThreadStart Action = null;
-            public readonly EventType EventType = EventType.None; 
+            public readonly EventType EventType = EventType.None;
             public readonly IEventData EventData = null;
+            public bool Persistent { get; set; } 
+
             public WorkItem() {}
 
-            public WorkItem(ThreadStart action, EventType type = EventType.None, IEventData eventData = null, bool isPersistent = false) {
+            public WorkItem(ThreadStart action, EventType type = EventType.None, IEventData eventData = null, bool persistent = false) {
                 Action = action;
                 EventType = type;
                 EventData = eventData;
-                IsPersistent = isPersistent;
-            }
-
-            public bool IsPersistent { get; private set; }
-
-            public void SetRepeat(bool b) {
-                IsPersistent = b;
+                Persistent = persistent;
             }
         }
-
         
         public static void QueueWorkItem(WorkItem workItem) {
           
@@ -42,81 +38,49 @@ namespace RockSatC_2016.Utility {
                 lock (ThreadActions) {
                     ThreadActions.Enqueue(workItem);
                 }
-
                 //if we have less ThreadWorkers working than our MaxThreads, go ahead and spin one up.
-                if (AvailableThreads.Count < MaxThreads)
-                {
+                if (AvailableThreads.Count < MaxThreads) {
+                    Debug.Print("Threadpool spooling up additional thread...");
                     var thread = new Thread(ThreadWorker);
-
                     AvailableThreads.Add(thread);
                     thread.Start();
                 }
-
                 //pulse all ThreadWorkers
                 lock (Locker) {
                     ThreadSynch.Set();
                 }
         }
 
+        private static void ThreadWorker() {
 
-        private static void ThreadWorker()
-        {
-
-            while (true)
-            {
+            while (true) {
                 //Wait for pulse from ThreadPool, signifying a new work item has been queued
                 // ReSharper disable once InconsistentlySynchronizedField
                 ThreadSynch.WaitOne();
 
                 var workItem = new WorkItem();
-                //critical section
                 lock (ThreadActions) {
-                    if (ThreadActions.Count > 0)
-                        //pull the next work item off of the queue
-                        workItem = ThreadActions.Dequeue() as WorkItem;
-                    else {
-                        //the thread is empty, and we're in a locked section.. 
-                        //reset the mutex so that this thread waits for the next pulse(when the next action is queued)
-                        lock (ThreadSynch) {
+                    //pull the next work item off of the queue
+                    if (ThreadActions.Count > 0) workItem = ThreadActions.Dequeue() as WorkItem;
+                    //no pending actions - reset threads so they wait for next pulse.
+                    else lock (ThreadSynch) 
                             ThreadSynch.Reset();
-                            //continue;
-                        }
-                    }
                 }
-                //if we didn't get a work item out of the queue (it was empty) go back to waiting
+
+                //if no action, go back to waiting.
                 if (workItem?.Action == null) continue;
-                //Debug.Print("We have a valid action to execute.");
-                //if we did get a work item, execute it's action.
-                try
-                {
-                    //Debug.Print("Executing action.");
+                try {
+                    //try to execute, then trigger any events, then re-add to queue if repeatable.
                     workItem.Action();
-                    //if the action was an event, eventData that the event has completed
-                    if (workItem.EventType != EventType.None)
-                    {
-                        //Debug.Print("Event found... triggering event.");
-                        FlightComputer.Instance.TriggerEvent(workItem.EventType, workItem.EventData);
-                    }
-                    if (workItem.IsPersistent) QueueWorkItem(workItem);
+                    if (workItem.EventType != EventType.None) FlightComputer.TriggerEvent(workItem.EventType, workItem.EventData);
+                    if (workItem.Persistent) QueueWorkItem(workItem);
                 }
-                catch (Exception e)
-                {
+                catch (Exception e) {
                     Debug.Print("ThreadPool: Unhandled error executing action - " + e.Message + e.InnerException);
                     Debug.Print("StackTrace: " + e.StackTrace);
+                    //maybe just reset the flight computer?
                 }
-
-                ////Debug.Print("Executing action.");
-                //workItem.Action();
-                ////if the action was an event, eventData that the event has completed
-                //if (workItem.EventType != EventType.None)
-                //{
-                //    //Debug.Print("Event found... triggering event.");
-                //    FlightComputer.Instance.TriggerEvent(workItem.EventType, workItem.EventData);
-                //}
-                //if (workItem.IsPersistent) QueueWorkItem(workItem);
             }
-
         }
-       
     }
 }

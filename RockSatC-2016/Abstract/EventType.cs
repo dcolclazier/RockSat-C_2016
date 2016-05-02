@@ -1,4 +1,4 @@
-﻿namespace RockSatC_2016.Event_Data {
+﻿namespace RockSatC_2016.Abstract {
     public enum EventType : byte {
         None = 0x00,
         BNOUpdate = 0x01,

@@ -1,12 +1,6 @@
 ﻿#undef BMP085_USE_DATASHEET_VALS // define for sanity check
 
-using System;
-using Microsoft.SPOT;
-using Microsoft.SPOT.Hardware;
-using RockSatC_2016.Utility;
-using Math = System.Math;
-
-namespace RockSatC_2016.Sensors
+namespace RockSatC_2016.Drivers
 {
     //public class Bmp180 
     //{
