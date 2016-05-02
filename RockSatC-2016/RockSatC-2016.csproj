@@ -35,10 +35,8 @@
     <Compile Include="Work Items\BNOTempUpdater.cs" />
     <Compile Include="Work Items\SerialBNOActions.cs" />
     <Compile Include="Event Listeners\ExampleListener.cs" />
-    <Compile Include="Abstract\IEventListener.cs" />
     <Compile Include="Event Listeners\Logger.cs" />
     <Compile Include="Event Data\BNOData.cs" />
-    <Compile Include="Abstract\IAction.cs" />
     <Compile Include="Abstract\IEventData.cs" />
     <Compile Include="Work Items\GeigerData.cs" />
     <Compile Include="Work Items\GeigerUpdater.cs" />
@@ -48,7 +46,6 @@
     <Compile Include="Sensors\BNO055.cs" />
     <Compile Include="Flight Computer\FlightComputer.cs" />
     <Compile Include="Event Data\EventType.cs" />
-    <Compile Include="Abstract\Action.cs" />
     <Compile Include="Utility\I2CBus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />

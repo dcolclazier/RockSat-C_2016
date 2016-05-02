@@ -11,8 +11,8 @@ namespace RockSatC_2016.Sensors {
     
     public class SerialBNO {
         private const int _baud = 115200;
-        private SerialPort _comPort;
-        private Bno055OpMode _mode;
+        private readonly SerialPort _comPort;
+        private readonly Bno055OpMode _mode;
 
         private readonly object locker = new object();
 
@@ -229,54 +229,27 @@ namespace RockSatC_2016.Sensors {
                 rawResult[i] = ((data[i*2 + 1] << 8) | data[i*2]);
                 if (rawResult[i] > 32767) rawResult[i] -= 65536;
             }
+            var modifier = 100.0f;
+            // ReSharper disable once SwitchStatementMissingSomeCases - missing cases = 100.0f
             switch (vec) {
-                case Bno055VectorType.Vector_Accelerometer:
-                    return new Vector()
-                    {
-                        X = rawResult[0] / 100.0f,
-                        Y = rawResult[1] / 100.0f,
-                        Z = rawResult[2] / 100.0f
-                    };
                 case Bno055VectorType.Vector_Magnetometer:
-                    return new Vector()
-                    {
-                        X = rawResult[0] / 16.0f,
-                        Y = rawResult[1] / 16.0f,
-                        Z = rawResult[2] / 16.0f
-                    };
-                case Bno055VectorType.Vector_Gyroscope:
-                    return new Vector()
-                    {
-                        X = rawResult[0] / 900.0f,
-                        Y = rawResult[1] / 900.0f,
-                        Z = rawResult[2] / 900.0f
-                    };
                 case Bno055VectorType.Vector_Euler:
-                    return new Vector() {
-                        X = rawResult[0]/16.0f,
-                        Y = rawResult[1]/16.0f,
-                        Z = rawResult[2]/16.0f
-                    };
-                case Bno055VectorType.Vector_Linearaccel:
-                    return new Vector()
-                    {
-                        X = rawResult[0] / 100.0f,
-                        Y = rawResult[1] / 100.0f,
-                        Z = rawResult[2] / 100.0f
-                    };
-                case Bno055VectorType.Vector_Gravity:
-                    return new Vector()
-                    {
-                        X = rawResult[0] / 100.0f,
-                        Y = rawResult[1] / 100.0f,
-                        Z = rawResult[2] / 100.0f
-                    };
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(vec));
+                    modifier = 16.0f;
+                    break;
+                case Bno055VectorType.Vector_Gyroscope:
+                    modifier = 900.0f;
+                    break;
             }
+            return new Vector()
+            {
+                X = rawResult[0] / modifier,
+                Y = rawResult[1] / modifier,
+                Z = rawResult[2] / modifier
+            };
+
         }
 
-        public byte[] serial_send(byte[] command, int expectedLength, bool ack = true, int max_tries = 5, int tries = 0) {
+        private byte[] serial_send(byte[] command, int expectedLength, bool ack = true, int max_tries = 5, int tries = 0) {
             //Flush COM port to clear before sending
             _comPort.Flush();
             //Send Data
@@ -287,7 +260,7 @@ namespace RockSatC_2016.Sensors {
             if (!ack) {
                 return null;
             }
-            Thread.Sleep(65);
+            Thread.Sleep(65); //bug THIS THIS SLOW... should wait until correct amount of data is ready to be read.
             //get ack response
             
             //while (_comPort.BytesToRead < expectedLength) ;
@@ -309,7 +282,7 @@ namespace RockSatC_2016.Sensors {
             return serial_send(command, expectedLength, ack, max_tries, tries);
         }
 
-        public void write_byte(Bno055Registers reg, byte data, bool ack = true) {
+        private void write_byte(Bno055Registers reg, byte data, bool ack = true) {
             var command = new byte[5];
             command[0] = 0xAA; //start byte
             command[1] = 0x00; //0x00: Write, 0x01: Read
@@ -322,7 +295,7 @@ namespace RockSatC_2016.Sensors {
             if (ack) verify(response);
         }
 
-        public void write_bytes(Bno055Registers reg, byte[] data, bool ack = true) {
+        private void write_bytes(Bno055Registers reg, byte[] data, bool ack = true) {
             var command = new byte[4 + data.Length];
             command[0] = 0xAA; //start byte
             command[1] = 0x00; //0x00: Write, 0x01: Read
@@ -342,7 +315,7 @@ namespace RockSatC_2016.Sensors {
                 throw new IOException("Error writing to register: 0x" + response);
         }
 
-        public byte[] read_bytes(Bno055Registers reg, int expectedLength, bool ack = true) {
+        private byte[] read_bytes(Bno055Registers reg, int expectedLength, bool ack = true) {
             //build read command
             var command = new byte[4];
             command[0] = 0xAA; //start byte
@@ -370,23 +343,23 @@ namespace RockSatC_2016.Sensors {
             return data;
         }
 
-        public string bytearraytostring(byte[] array) {
-            int size = array.Length;
-            string myString = "";
-            for (int i = 0; i < size; i++) {
-                myString += array[i].ToString("x");
+        private string bytearraytostring(byte[] array) {
+            var hexString = new StringBuilder();
+            for (var i = 0; i < array.Length; i++) {
+                hexString.Append(array[i].ToString("x"));
             }
-            return myString;
+            return hexString.ToString();
         }
 
-        public byte read_byte(Bno055Registers reg) {
+        private byte read_byte(Bno055Registers reg) {
             return read_bytes(reg, 1)[0];
         }
 
         public byte read_signed_byte(Bno055Registers reg) {
             var data = read_byte(reg);
-            if (data > 127) return (byte) (data - 256);
-            return data;
+            return (data > 127) ? (byte) (data - 256) : data;
+            //if (data > 127) return (byte) (data - 256);
+            //return data;
         }
 
         public void setMode(Bno055OpMode mode) {

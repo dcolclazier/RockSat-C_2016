@@ -12,7 +12,7 @@ namespace RockSatC_2016.Work_Items {
 
     
 
-    public class GeigerUpdater : IAction {
+    public class GeigerUpdater  {
 
         static readonly InterruptPort shieldedGeiger = new InterruptPort(Pins.GPIO_PIN_D2, false, Port.ResistorMode.PullUp, Port.InterruptMode.InterruptEdgeHigh);
         static readonly InterruptPort unshieldedGeiger = new InterruptPort(Pins.GPIO_PIN_D3, false, Port.ResistorMode.PullUp, Port.InterruptMode.InterruptEdgeHigh);
@@ -23,7 +23,7 @@ namespace RockSatC_2016.Work_Items {
         private int shieldedCounts { get; set; }
         private int unshieldedCounts { get; set; }
 
-        public GeigerUpdater(Cpu.Pin shieldedGeigerInterrupt, Cpu.Pin unshieldedGeigerInterrupt)
+        public GeigerUpdater()
         {
             Debug.Print("Adding interrupt action for shielded geiger counter.");
             shieldedGeiger.OnInterrupt += Shielded_Counter;
@@ -33,8 +33,6 @@ namespace RockSatC_2016.Work_Items {
             workItem = new ThreadPool.WorkItem(GatherCounts, EventType.GeigerUpdate, geigerData, true);
             
         }
-
-        
 
         private void GatherCounts()
         {

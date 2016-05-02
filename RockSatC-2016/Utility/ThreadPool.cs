@@ -14,19 +14,6 @@ namespace RockSatC_2016.Utility {
         private static readonly Queue ThreadActions = new Queue();
         private static readonly ManualResetEvent ThreadSynch = new ManualResetEvent(false);
         private const int MaxThreads = 3;
-        //private static readonly Hashtable PersistantThreads = new Hashtable();
-        public static int PersistantThreadCount { get; private set; }
-
-        public static void Start(ThreadStart start) {
-            try {
-                var thread = new Thread(start);
-                thread.Start();
-            }
-            catch (Exception e) {
-                Debug.Print("ThreadPool: Error starting thread: " + e.Message + e.InnerException);
-                Debug.Print("Stack trace: " + e.StackTrace);
-            }
-        }
 
         public class WorkItem {
             public readonly ThreadStart Action = null;
@@ -56,7 +43,6 @@ namespace RockSatC_2016.Utility {
                     ThreadActions.Enqueue(workItem);
                 }
 
-
                 //if we have less ThreadWorkers working than our MaxThreads, go ahead and spin one up.
                 if (AvailableThreads.Count < MaxThreads)
                 {
@@ -70,7 +56,6 @@ namespace RockSatC_2016.Utility {
                 lock (Locker) {
                     ThreadSynch.Set();
                 }
-            //}
         }
 
 

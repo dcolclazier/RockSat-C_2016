@@ -9,7 +9,7 @@ using RockSatC_2016.Utility;
 using SecretLabs.NETMF.Hardware.Netduino;
 
 namespace RockSatC_2016.Work_Items {
-    public class SerialBNOActions : IAction {
+    public class SerialBNOActions {
 
         private readonly SerialBNO _bnoSensor;
 

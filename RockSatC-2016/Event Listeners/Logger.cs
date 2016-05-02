@@ -7,10 +7,9 @@ using RockSatC_2016.Event_Data;
 using RockSatC_2016.Flight_Computer;
 using RockSatC_2016.Utility;
 using RockSatC_2016.Work_Items;
-using IEventListener = RockSatC_2016.Abstract.IEventListener;
 
 namespace RockSatC_2016.Event_Listeners {
-    public class Logger : IAction, IEventListener {
+    public class Logger  {
         private string buffer = "";
         private readonly int maxBufferSize;
         private readonly Queue dataToBeWrittenTo = new Queue();
@@ -59,20 +58,15 @@ namespace RockSatC_2016.Event_Listeners {
                         throw new ArgumentOutOfRangeException(nameof(packet.Name),"Event Type not handled by logger... ");
                 }
                 if (buffer.Length + logEntry.Length > maxBufferSize) {
-                    FlushBufferToSD();
+                    var data = System.Text.Encoding.UTF8.GetBytes(buffer);
+                    open_logger.Write(data, 0, data.Length);
+                    Debug.Print("Buffer flushed to SD Card - clearing..." + Debug.GC(true));
+                    buffer = "";
                 }
                 buffer += logEntry;
             }
         }
-
-        private void FlushBufferToSD() {
-            var data = System.Text.Encoding.UTF8.GetBytes(buffer);
-            open_logger.Write(data,0,data.Length);
-            Debug.Print("Buffer flushed to SD Card - clearing..." + Debug.GC(true));
-            buffer = "";
-        }
-
-
+        
         class QueuePacket {
             public EventType Name { get; private set; }
             public IEventData EventData { get; private set; }
