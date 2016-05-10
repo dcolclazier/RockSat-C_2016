@@ -20,14 +20,17 @@ namespace RockSatC_2016.Utility {
             public readonly ThreadStart Action = null;
             public readonly EventType EventType = EventType.None;
             public readonly IEventData EventData = null;
+            public byte[] ArrayData = null;
+            
             public bool Persistent { get; set; } 
 
             public WorkItem() {}
 
-            public WorkItem(ThreadStart action, EventType type = EventType.None, IEventData eventData = null, bool persistent = false) {
+            public WorkItem(ThreadStart action, ref byte[] arrayData, EventType type = EventType.None, IEventData eventData = null, bool persistent = false) {
                 Action = action;
                 EventType = type;
                 EventData = eventData;
+                ArrayData = arrayData;
                 Persistent = persistent;
             }
         }
@@ -69,17 +72,25 @@ namespace RockSatC_2016.Utility {
 
                 //if no action, go back to waiting.
                 if (workItem?.Action == null) continue;
-                try {
-                    //try to execute, then trigger any events, then re-add to queue if repeatable.
-                    workItem.Action();
-                    if (workItem.EventType != EventType.None) FlightComputer.TriggerEvent(workItem.EventType, workItem.EventData);
-                    if (workItem.Persistent) QueueWorkItem(workItem);
-                }
-                catch (Exception e) {
-                    Debug.Print("ThreadPool: Unhandled error executing action - " + e.Message + e.InnerException);
-                    Debug.Print("StackTrace: " + e.StackTrace);
-                    //maybe just reset the flight computer?
-                }
+
+                //nonsafe
+                workItem.Action();
+                if (workItem.EventType != EventType.None) FlightComputer.TriggerEvent(workItem.EventType, workItem.EventData, ref workItem.ArrayData);
+                if (workItem.Persistent) QueueWorkItem(workItem);
+
+
+                ////safe
+                //try {
+                //    //try to execute, then trigger any events, then re-add to queue if repeatable.
+                //    workItem.Action();
+                //    if (workItem.EventType != EventType.None) FlightComputer.TriggerEvent(workItem.EventType, workItem.EventData, ref workItem.ArrayData);
+                //    if (workItem.Persistent) QueueWorkItem(workItem);
+                //}
+                //catch (Exception e) {
+                //    Debug.Print("ThreadPool: Unhandled error executing action - " + e.Message + e.InnerException);
+                //    Debug.Print("StackTrace: " + e.StackTrace);
+                //    //maybe just reset the flight computer?
+                //}
             }
         }
     }

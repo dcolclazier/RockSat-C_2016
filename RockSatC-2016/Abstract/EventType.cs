@@ -3,5 +3,6 @@
         None = 0x00,
         BNOUpdate = 0x01,
         GeigerUpdate = 0x02,
+        AccelDump = 0x03
     }
 }

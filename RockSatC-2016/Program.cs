@@ -23,11 +23,19 @@ namespace RockSatC_2016 {
             Debug.Print("Initializing geiger counter collection data");
             var geigerloop = new GeigerUpdater();
 
+            //THIS SECTION CREATES/INITIALIZES THE GEIGER COUNTER UPDATER
+            Debug.Print("Initializing fast accel dump collector with a size of 45kb");
+            var acceldumploop = new AccelUpdater(30000);
+
             Debug.Print("INIT Complete. Continuing with boot.");
 
             //THIS STARTS THE LOGGER
             Debug.Print("Starting logger...");
             logger.Start();
+
+            //THIS STARTS THE Accel dump update
+            Debug.Print("Starting accel dumper...");
+            acceldumploop.Start();
 
             //THIS STARTS THE BNO SENSOR UPDATE
             Debug.Print("Starting bno sensor updates...");

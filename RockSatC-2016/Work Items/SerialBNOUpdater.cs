@@ -17,8 +17,8 @@ namespace RockSatC_2016.Work_Items {
         public SerialBNOUpdater() {
             _bnoSensor = new SerialBNO(SerialPorts.COM4,5000,5000,SerialBNO.Bno055OpMode.Operation_Mode_Ndof);
             _bnoData = new BNOData();
-
-            _workItem = new ThreadPool.WorkItem(GyroUpdater, EventType.BNOUpdate, _bnoData, true);
+            var unused = new byte[] {};
+            _workItem = new ThreadPool.WorkItem(GyroUpdater, ref unused, EventType.BNOUpdate, _bnoData, true);
 
             _bnoSensor.begin();
         }
