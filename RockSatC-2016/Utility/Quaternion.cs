@@ -53,9 +53,9 @@ namespace RockSatC_2016.Utility {
             double sqz = Z * Z;
 
             var ret = new Vector {
-                X = Math.Atan2((2.0*(X*Y + Z*W)), (sqx - sqy - sqz + sqw)),
-                Y = Math.Asin(-2.0*(X*Z - Y*W)/(sqx + sqy + sqz + sqw)),
-                Z = Math.Atan2(2.0*(Y*Z + X*W), (-sqx - sqy + sqz + sqw))
+                X = (float)Math.Atan2((2.0*(X*Y + Z*W)), (sqx - sqy - sqz + sqw)),
+                Y = (float)Math.Asin(-2.0*(X*Z - Y*W)/(sqx + sqy + sqz + sqw)),
+                Z = (float)Math.Atan2(2.0*(Y*Z + X*W), (-sqx - sqy + sqz + sqw))
             };
 
             return ret;
