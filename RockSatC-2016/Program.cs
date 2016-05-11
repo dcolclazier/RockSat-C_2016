@@ -9,11 +9,13 @@ namespace RockSatC_2016 {
        
         public static void Main() {
 
+           
+
             //THIS SECTION CREATES / INITIALIZES THE SERIAL LOGGER
             Debug.Print("Flight computer started successfully. Beginning INIT.");
 
             Debug.Print("Initializing Serial logger on COM1 with baudrate of 115200bps.  Max log buffer = 4096b");
-            var logger = new Logger(SerialPorts.COM1, 115200, 4096);
+            var logger = new Logger(SerialPorts.COM1, 115200, 512);
 
             //THIS SECTION CREATES/INITIALIZES THE SERIAL BNO 100HZ UPDATER
             Debug.Print("Initializing BNO Sensor on Serial Port COM4, 1 stop bit, 0 parity, 8 data bits");
@@ -25,9 +27,14 @@ namespace RockSatC_2016 {
 
             //THIS SECTION CREATES/INITIALIZES THE GEIGER COUNTER UPDATER
             Debug.Print("Initializing fast accel dump collector with a size of 45kb");
-            var acceldumploop = new AccelUpdater(30000);
+            var acceldumploop = new AccelUpdater(12000, 500);
 
             Debug.Print("INIT Complete. Continuing with boot.");
+
+            //THIS SECTION INITIALIZES AND STARTS THE MEMORY MONITOR
+            Debug.Print("Starting memory monitor...");
+            MemoryMonitor.Instance.Start(ref logger);
+            
 
             //THIS STARTS THE LOGGER
             Debug.Print("Starting logger...");

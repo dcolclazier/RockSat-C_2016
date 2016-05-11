@@ -9,67 +9,20 @@ using RockSatC_2016.Utility;
 using SecretLabs.NETMF.Hardware.Netduino;
 
 namespace RockSatC_2016.Work_Items {
-
-    public class AccelUpdater {
-        private static readonly AnalogInput XPin = new AnalogInput(AnalogChannels.ANALOG_PIN_A0);
-        private static readonly AnalogInput YPin = new AnalogInput(AnalogChannels.ANALOG_PIN_A1);
-        private static readonly AnalogInput ZPin = new AnalogInput(AnalogChannels.ANALOG_PIN_A2);
-
-        private readonly AccelData _accelData = new AccelData();
-        private readonly ThreadPool.WorkItem _workItem;
-        private readonly byte[] _dataArray;
-        private readonly int _arraySize;
-
-        public AccelUpdater(int arraySize) {
-            Debug.Print("Initializing Accelerometer data updater");
-            _arraySize = arraySize;
-            _dataArray = new byte[_arraySize];
-            _workItem = new ThreadPool.WorkItem(DumpAccelData, ref _dataArray, EventType.AccelDump, _accelData, true);
-        }
-
-        private void DumpAccelData()
-        {
-            short x = 0;
-            for (var i = 0; i < _arraySize; i+=2)
-            {
-                short raw = 0;
-                switch (x++%3) {
-                    case 0: raw = (short)(ZPin.Read() * 1000);
-                        break;
-                    case 2: raw = (short)(YPin.Read() * 1000);
-                        break;
-                    case 1: raw = (short)(XPin.Read() * 1000);
-                        break;
-                }
-
-                _dataArray[i] = (byte) (raw >> 8);
-                _dataArray[i + 1] = (byte) (raw & 255);
-            }
-            Debug.Print("Accel data dump complete - free mem: " + Debug.GC(true));
-        }
-
-        public void Start() {
-            _workItem.Persistent = true;
-            FlightComputer.Instance.Execute(_workItem);
-        }
-        public void Stop() {
-            _workItem.Persistent = false;
-        }
-    }
-    
-
     public class GeigerUpdater  {
 
         static readonly InterruptPort ShieldedGeiger = new InterruptPort(Pins.GPIO_PIN_D2, false, Port.ResistorMode.PullUp, Port.InterruptMode.InterruptEdgeHigh);
         static readonly InterruptPort UnshieldedGeiger = new InterruptPort(Pins.GPIO_PIN_D3, false, Port.ResistorMode.PullUp, Port.InterruptMode.InterruptEdgeHigh);
 
-        private GeigerData geigerData;
-        private readonly ThreadPool.WorkItem workItem;
+        private readonly GeigerData _geigerData;
+        private readonly WorkItem _workItem;
 
         private int ShieldedCounts { get; set; }
         private int UnshieldedCounts { get; set; }
 
         public GeigerUpdater(){
+
+            _geigerData = new GeigerData();
             Debug.Print("Adding interrupt action for shielded geiger counter.");
             ShieldedGeiger.OnInterrupt += Shielded_Counter;
 
@@ -78,14 +31,14 @@ namespace RockSatC_2016.Work_Items {
 
             Debug.Print("Creating Threadpool action, repeats every 5 seconds.");
             var unused = new byte[] {};
-            workItem = new ThreadPool.WorkItem(GatherCounts, ref unused, EventType.GeigerUpdate, geigerData, true);
+            _workItem = new WorkItem(GatherCounts, ref unused, EventType.GeigerUpdate, _geigerData, true, true);
         }
 
         private void GatherCounts() {
             Thread.Sleep(5000);
             Debug.Print("Gathering Geiger counts data, resetting. " + Debug.GC(true));
-            geigerData.shielded_geigerCount = ShieldedCounts;
-            geigerData.unshielded_geigerCount = UnshieldedCounts;
+            _geigerData.shielded_geigerCount = ShieldedCounts;
+            _geigerData.unshielded_geigerCount = UnshieldedCounts;
             ShieldedCounts = 0;
             UnshieldedCounts = 0;
         }
@@ -98,12 +51,7 @@ namespace RockSatC_2016.Work_Items {
         }
 
         public void Start() {
-            workItem.Persistent = true;
-            FlightComputer.Instance.Execute(workItem);
-        }
-
-        public void Stop() {
-            workItem.Persistent = false;
+            _workItem.Start();
         }
     }
 }

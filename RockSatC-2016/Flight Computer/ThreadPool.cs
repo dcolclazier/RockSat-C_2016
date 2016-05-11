@@ -9,6 +9,7 @@ using RockSatC_2016.Flight_Computer;
 namespace RockSatC_2016.Utility {
     public static class ThreadPool {
 
+
         private static readonly object Locker = new object();
         private static readonly ArrayList AvailableThreads = new ArrayList();
         private static readonly Queue ThreadActions = new Queue();
@@ -16,24 +17,7 @@ namespace RockSatC_2016.Utility {
         private static readonly FlightComputer FlightComputer = FlightComputer.Instance;
         private const int MaxThreads = 3;
 
-        public class WorkItem {
-            public readonly ThreadStart Action = null;
-            public readonly EventType EventType = EventType.None;
-            public readonly IEventData EventData = null;
-            public byte[] ArrayData = null;
-            
-            public bool Persistent { get; set; } 
-
-            public WorkItem() {}
-
-            public WorkItem(ThreadStart action, ref byte[] arrayData, EventType type = EventType.None, IEventData eventData = null, bool persistent = false) {
-                Action = action;
-                EventType = type;
-                EventData = eventData;
-                ArrayData = arrayData;
-                Persistent = persistent;
-            }
-        }
+        
         
         public static void QueueWorkItem(WorkItem workItem) {
           

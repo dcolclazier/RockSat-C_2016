@@ -11,7 +11,7 @@ namespace RockSatC_2016.Flight_Computer {
 
         private FlightComputer() { }
 
-        public void Execute(ThreadPool.WorkItem workItem) {
+        public void Execute(WorkItem workItem) {
             ThreadPool.QueueWorkItem(workItem);
         }
         public static event EventTriggered OnEventTriggered;

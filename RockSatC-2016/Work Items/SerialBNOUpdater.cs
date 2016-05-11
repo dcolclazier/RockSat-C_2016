@@ -1,4 +1,5 @@
-﻿using RockSatC_2016.Abstract;
+﻿using Microsoft.SPOT;
+using RockSatC_2016.Abstract;
 using RockSatC_2016.Drivers;
 using RockSatC_2016.Event_Data;
 using RockSatC_2016.Flight_Computer;
@@ -12,13 +13,13 @@ namespace RockSatC_2016.Work_Items {
 
         private BNOData _bnoData;
 
-        private readonly ThreadPool.WorkItem _workItem;
+        private readonly WorkItem _workItem;
 
         public SerialBNOUpdater() {
             _bnoSensor = new SerialBNO(SerialPorts.COM4,5000,5000,SerialBNO.Bno055OpMode.Operation_Mode_Ndof);
             _bnoData = new BNOData();
             var unused = new byte[] {};
-            _workItem = new ThreadPool.WorkItem(GyroUpdater, ref unused, EventType.BNOUpdate, _bnoData, true);
+            _workItem = new WorkItem(GyroUpdater, ref unused, EventType.BNOUpdate, _bnoData, true, true);
 
             _bnoSensor.begin();
         }
@@ -43,15 +44,12 @@ namespace RockSatC_2016.Work_Items {
             //            + _bnoData.accel_y.ToString("F2") + ", "
             //            + _bnoData.accel_z.ToString("F2") + ">\n" +
             //            "Temp: " + _bnoData.temp);
+            Debug.Print("BNO Sensor update complete.");
         }
 
         public void Start() {
-            _workItem.Persistent = true;
-            FlightComputer.Instance.Execute(_workItem);
+            _workItem.Start();
         }
-
-        public void Stop() {
-            _workItem.Persistent = false;
-        }
+        
     }
 }
