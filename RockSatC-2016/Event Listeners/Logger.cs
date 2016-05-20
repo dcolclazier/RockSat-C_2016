@@ -21,7 +21,7 @@ namespace RockSatC_2016.Event_Listeners {
 
             _maxBufferSize = maxBuffer;
             Debug.Print("Initializing serial port...");
-            _openLogger = new SerialPort(comPort, baud);
+            _openLogger = new SerialPort(comPort, baud, Parity.None, 8, StopBits.One);
             Debug.Print("Serial port initialized... opening serial port.");
             _openLogger.Open();
             Debug.Print("Serial port opened.");
@@ -38,35 +38,37 @@ namespace RockSatC_2016.Event_Listeners {
             
             //Debug.Print("Data found to be written...");
             var packet = (QueuePacket)_pendingData.Dequeue();
-            var logEntry = "";
-                switch (packet.Name) {
-                    case EventType.BNOUpdate:
-                        var data = packet.EventData as BNOData;
-                        logEntry = "T:" + data.temp + ";" + "A:" + data.accel_x + "," + data.accel_y + "," +
-                                       data.accel_z + ";" + "G:" + data.gyro_x + "," + data.gyro_y + "," + data.gyro_z + ";";
-                        break;
-                    case EventType.GeigerUpdate:
-                        var geigerData = packet.EventData as GeigerData;
-                        logEntry = "R:" + geigerData.shielded_geigerCount + "," + geigerData.unshielded_geigerCount + ";";
-                        break;
-                    case EventType.AccelDump:
-                        var entry = Encoding.UTF8.GetBytes("AD:");
-                        _openLogger.Write(entry,0,entry.Length);
-                        _openLogger.Write(packet.ArrayData,0,packet.ArrayData.Length);
-                        Debug.Print("Flushed accel byte array directly to SD card...");
-                        return;
-                    case EventType.None:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(packet.Name),"Event Type not handled by logger... ");
-                }
-                if (_buffer.Length + logEntry.Length > _maxBufferSize) {
-                    var data = System.Text.Encoding.UTF8.GetBytes(_buffer);
-                    _openLogger.Write(data, 0, data.Length);
-                    Debug.Print("Buffer flushed to SD Card - clearing..." + Debug.GC(true));
-                    _buffer = "";
-                }
-                _buffer += logEntry;
+            _openLogger.Write(packet.ArrayData,0,packet.ArrayData.Length);
+
+            //var logEntry = "";
+            //    switch (packet.Name) {
+            //        case EventType.BNOUpdate:
+            //            var data = packet.EventData as BNOData;
+            //            logEntry = "T:" + data.temp + ";" + "A:" + data.accel_x + "," + data.accel_y + "," +
+            //                           data.accel_z + ";" + "G:" + data.gyro_x + "," + data.gyro_y + "," + data.gyro_z + ";";
+            //            break;
+            //        case EventType.GeigerUpdate:
+            //            var geigerData = packet.EventData as GeigerData;
+            //            logEntry = "R:" + geigerData.shielded_geigerCount + "," + geigerData.unshielded_geigerCount + ";";
+            //            break;
+            //        case EventType.AccelDump:
+            //            var entry = Encoding.UTF8.GetBytes("AD:");
+            //            _openLogger.Write(entry,0,entry.Length);
+            //            _openLogger.Write(packet.ArrayData,0,packet.ArrayData.Length);
+            //            Debug.Print("Flushed accel byte array directly to SD card...");
+            //            return;
+            //        case EventType.None:
+            //            break;
+            //        default:
+            //            throw new ArgumentOutOfRangeException(nameof(packet.Name),"Event Type not handled by logger... ");
+            //    }
+            //    if (_buffer.Length + logEntry.Length > _maxBufferSize) {
+            //        var data = System.Text.Encoding.UTF8.GetBytes(_buffer);
+            //        _openLogger.Write(data, 0, data.Length);
+            //        Debug.Print("Buffer flushed to SD Card - clearing..." + Debug.GC(true));
+            //        _buffer = "";
+            //    }
+            //    _buffer += logEntry;
             Debug.Print("Queue After running logworker:  " + _pendingData.Count + " : " + Debug.GC(true));
         }
         

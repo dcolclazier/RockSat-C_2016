@@ -78,7 +78,7 @@ namespace RockSatC_2016.Drivers {
 
         }
 
-        private byte[] serial_send(byte[] command, int expectedLength, bool ack = true, int max_tries = 5, int tries = 0) {
+        private byte[] serial_send(byte[] command, int expectedLength, bool ack = true, int max_tries = 10, int tries = 0) {
 
             _comPort.Flush();
             _comPort.Write(command, 0, command.Length);

@@ -14,7 +14,6 @@ namespace RockSatC_2016.Work_Items
 
         private readonly WorkItem _workItem;
         private readonly ArrayList _pauseableWorkItems = new ArrayList();
-        private readonly ArrayList _pausedWorkItems = new ArrayList();
         private Logger _logger;
 
         private MemoryMonitor()
@@ -26,20 +25,17 @@ namespace RockSatC_2016.Work_Items
 
         private void MonitorMemory()
         {
-            var freeMem = Debug.GC(true);
-            if (freeMem > 60000) return;
+            if (Debug.GC(true) > 60000) return;
 
-            Debug.Print("Pausing actions to allow logger to catch up... " + Debug.GC(true));
-            foreach (WorkItem action in _pauseableWorkItems) {
-                action.Stop();
-            }
+            Debug.Print("Pausing actions to allow logger to catch up... " + Debug.GC(false));
 
+            foreach (WorkItem action in _pauseableWorkItems) action.Stop();
             while (_logger.pendingItems > 0) ;
 
-            Debug.Print("Resuming paused actions... " + Debug.GC(true) );
-            foreach (WorkItem action in _pauseableWorkItems) {
-                action.Start();
-            }
+            Debug.Print("Resuming paused actions... Current FreeMem: " + Debug.GC(true));
+
+            foreach (WorkItem action in _pauseableWorkItems) action.Start();
+            
         }
 
         public void RegisterPauseableAction(WorkItem actionToRegister) {

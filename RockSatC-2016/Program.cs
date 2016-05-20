@@ -9,8 +9,6 @@ namespace RockSatC_2016 {
        
         public static void Main() {
 
-           
-
             //THIS SECTION CREATES / INITIALIZES THE SERIAL LOGGER
             Debug.Print("Flight computer started successfully. Beginning INIT.");
 
@@ -26,8 +24,8 @@ namespace RockSatC_2016 {
             var geigerloop = new GeigerUpdater();
 
             //THIS SECTION CREATES/INITIALIZES THE GEIGER COUNTER UPDATER
-            Debug.Print("Initializing fast accel dump collector with a size of 45kb");
-            var acceldumploop = new AccelUpdater(12000, 500);
+            Debug.Print("Initializing fast accel dump collector with a size of 12kb");
+            var acceldumploop = new AccelUpdater(12000);
 
             Debug.Print("INIT Complete. Continuing with boot.");
 
