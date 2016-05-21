@@ -1,4 +1,5 @@
 ﻿using Microsoft.SPOT;
+using RockSatC_2016.Drivers;
 using RockSatC_2016.Event_Listeners;
 using RockSatC_2016.Work_Items;
 using SecretLabs.NETMF.Hardware.Netduino;
@@ -28,6 +29,9 @@ namespace RockSatC_2016 {
 
             Debug.Print("Initializing Serial logger on COM1 with baudrate of 115200bps.  Max log buffer = 4096b");
             var logger = new Logger(SerialPorts.COM1, 115200);
+
+            //Initializes the RICH on pin D7
+            var rich = new RICH();
 
             //THIS SECTION CREATES/INITIALIZES THE SERIAL BNO 100HZ UPDATER
             Debug.Print("Initializing BNO Sensor on Serial Port COM4, 1 stop bit, 0 parity, 8 data bits");
@@ -63,6 +67,9 @@ namespace RockSatC_2016 {
             //THIS STARTS THE Geiger UPDATE.
             Debug.Print("Starting geiger counter data collection...");
             geigerloop.Start();
+
+            //Starts the RICH detector
+            rich.TurnOn();
 
             Debug.Print("Flight computer boot successful.");
         }

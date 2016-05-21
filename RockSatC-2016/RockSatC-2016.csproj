@@ -32,6 +32,7 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
+    <Compile Include="Drivers\RICH.cs" />
     <Compile Include="Event Data\AccelData.cs" />
     <Compile Include="Flight Computer\WorkItem.cs" />
     <Compile Include="Work Items\AccelUpdater.cs" />
