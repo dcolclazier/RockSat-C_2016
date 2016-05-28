@@ -2,9 +2,9 @@
 using RockSatC_2016.Abstract;
 using RockSatC_2016.Drivers;
 using RockSatC_2016.Event_Data;
-using RockSatC_2016.Flight_Computer;
 using RockSatC_2016.Utility;
 using SecretLabs.NETMF.Hardware.Netduino;
+using Math = System.Math;
 
 namespace RockSatC_2016.Work_Items {
     public class SerialBNOUpdater {
@@ -31,11 +31,12 @@ namespace RockSatC_2016.Work_Items {
             _newData[2] = (byte)((_dataSize >> 8) & 0xFF);
             _newData[3] = (byte)(_dataSize & 0xFF);
 
-            _precision = 1;
-            for (int i = 0; i < sigFigs-1; i++)
-            {
-                _precision *= 10;
-            }
+            _precision = (int)Math.Pow(10, sigFigs - 1);
+            //_precision = 1;
+            //for (int i = 0; i < sigFigs-1; i++)
+            //{
+            //    _precision *= 10;
+            //}
 
 
             _workItem = new WorkItem(GyroUpdater, ref _newData, EventType.BNOUpdate, _bnoData, true, true);
