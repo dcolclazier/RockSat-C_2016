@@ -30,7 +30,7 @@ namespace RockSatC_2016 {
             Debug.Print("Initializing Serial logger on COM1 with baudrate of 115200bps.  Max log buffer = 4096b");
             var logger = new Logger(SerialPorts.COM1, 115200);
 
-            //Initializes the RICH on pin D7
+            //Initializes the RICH on pin D6
             var rich = new RICH();
 
             //THIS SECTION CREATES/INITIALIZES THE SERIAL BNO 100HZ UPDATER

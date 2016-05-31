@@ -14,8 +14,8 @@ namespace RockSatC_2016.Drivers
     {
         public RICH()
         {
-            Debug.Print("Initialing GoPro on pin D7...");
-            _richPin = new OutputPort(Pins.GPIO_PIN_D7, false);
+            Debug.Print("Initialing GoPro on pin D6...");
+            _richPin = new OutputPort(Pins.GPIO_PIN_D6, false);
             _richPin.Write(false);
         }
 
