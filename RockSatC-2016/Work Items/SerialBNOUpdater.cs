@@ -21,7 +21,7 @@ namespace RockSatC_2016.Work_Items {
         private readonly int _precision;
 
         public SerialBNOUpdater(int sigFigs = 4) {
-            _bnoSensor = new SerialBNO(SerialPorts.COM4,5000,5000,SerialBNO.Bno055OpMode.Operation_Mode_Ndof);
+            _bnoSensor = new SerialBNO(SerialPorts.COM3,5000,5000,SerialBNO.Bno055OpMode.Operation_Mode_Ndof);
             _bnoData = new BNOData();
 
 
